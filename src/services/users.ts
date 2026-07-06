@@ -35,3 +35,18 @@ export async function adminResetPassword({ funcionarioId, novaSenhaProvisoria }:
 
   return response.data;
 }
+
+interface UpdatePasswordData {
+  senhaAntiga: string;
+  novaSenha: string;
+}
+
+export async function updateOwnPassword(data: UpdatePasswordData): Promise<void> {
+  const token = localStorage.getItem("@CareHome:token");
+  
+  await api.put("/users/update-password", data, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}

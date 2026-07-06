@@ -21,6 +21,7 @@ import { PatientDocuments } from "../pages/PatientDocuments";
 import { CreatePatientDocument } from "../pages/CreatePatientDocument";
 import { CreateUser } from "../pages/Register";
 import { Funcionarios } from "../pages/Funcionarios";
+import { Perfil } from "../pages/Perfil";
 
 export function AppRoutes() {
   return (
@@ -30,6 +31,7 @@ export function AppRoutes() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/users/new" element={<CreateUser />} />
         <Route path="/funcionarios" element={<Funcionarios />} />
+        <Route path="/perfil" element={<Perfil />} />
 
         {/* Módulo de Pacientes */}
         <Route path="/patients" element={<Patients />} />
