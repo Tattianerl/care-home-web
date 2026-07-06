@@ -1,12 +1,15 @@
+// src/pages/Funcionarios/index.tsx
 import { useEffect, useState } from "react";
 import { ResetPasswordModal } from "../../components/ResetPasswordModal";
 import { api } from "../../services/api";
+import { toggleUserStatus } from "../../services/users";
 
 interface Funcionario {
   id: string;
   nome: string;
   email: string;
   cargo: string;
+  ativo: boolean; 
 }
 
 export function Funcionarios() {
@@ -15,9 +18,22 @@ export function Funcionarios() {
   const [funcionarioSelecionado, setFuncionarioSelecionado] = useState<Funcionario | null>(null);
   const [carregando, setCarregando] = useState(true);
 
-  // Busca a lista de funcionários do backend ao carregar a página
+  // 1. Função utilizada apenas para atualizar a lista em segundo plano (após ativação/desativação)
+  async function recarregarListaSemLoading() {
+    try {
+      const token = localStorage.getItem("@CareHome:token");
+      const response = await api.get("/users", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setFuncionarios(response.data);
+    } catch (error) {
+      console.error("Erro ao atualizar lista", error);
+    }
+  }
+
   useEffect(() => {
-    async function carregarFuncionarios() {
+    // 2. Função isolada para a montagem inicial do componente, gerenciando o estado de loading
+    async function inicializarComponente() {
       try {
         const token = localStorage.getItem("@CareHome:token");
         const response = await api.get("/users", {
@@ -31,8 +47,24 @@ export function Funcionarios() {
       }
     }
 
-    carregarFuncionarios();
+    inicializarComponente();
   }, []);
+
+  // 3. Função para alternar o status do funcionário (Ativar/Desativar)
+  async function handleToggleStatus(userId: string) {
+    try {
+      if (confirm("Tem certeza que deseja alterar o status deste funcionário?")) {
+        await toggleUserStatus(userId);
+        alert("Status atualizado com sucesso!");
+        
+        // Atualiza a lista na tela de forma limpa e segura
+        await recarregarListaSemLoading(); 
+      }
+    } catch (error) {
+      console.error("Erro detalhado ao alterar status:", error);
+      alert("Erro ao alterar o status do funcionário.");
+    }
+  }
 
   if (carregando) {
     return <div className="p-6 text-center text-gray-600">Carregando funcionários...</div>;
@@ -52,6 +84,7 @@ export function Funcionarios() {
               <th className="p-4">Nome</th>
               <th className="p-4">E-mail</th>
               <th className="p-4">Cargo</th>
+              <th className="p-4 text-center">Status</th>
               <th className="p-4 text-center">Ações</th>
             </tr>
           </thead>
@@ -67,7 +100,16 @@ export function Funcionarios() {
                     {func.cargo}
                   </span>
                 </td>
+                {/* Coluna de Status Visual */}
                 <td className="p-4 text-center">
+                  <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                    func.ativo ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                  }`}>
+                    {func.ativo ? "Ativo" : "Inativo"}
+                  </span>
+                </td>
+                {/* Coluna de Ações com os botões integrados */}
+                <td className="p-4 text-center space-x-2">
                   <button
                     onClick={() => {
                       setFuncionarioSelecionado(func);
@@ -76,6 +118,17 @@ export function Funcionarios() {
                     className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm"
                   >
                     Resetar Senha
+                  </button>
+
+                  <button
+                    onClick={() => handleToggleStatus(func.id)}
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors shadow-sm border ${
+                      func.ativo 
+                        ? "bg-white text-red-600 border-red-200 hover:bg-red-50" 
+                        : "bg-white text-green-600 border-green-200 hover:bg-green-50"
+                    }`}
+                  >
+                    {func.ativo ? "Desativar" : "Ativar"}
                   </button>
                 </td>
               </tr>
