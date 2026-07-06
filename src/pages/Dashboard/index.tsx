@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
-
 import { Card } from "../../components/Card";
 import { MainLayout } from "../../layouts/MainLayout";
-
 import { getDashboardToday } from "../../services/dashboard";
 import type { DashboardToday } from "../../types/dashboard";
 

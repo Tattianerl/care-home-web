@@ -1,6 +1,7 @@
 // src/components/Sidebar/index.tsx
 
 import { Link } from "react-router-dom";
+import { handleLogout } from "../../services/auth";
 
 export function Sidebar() {
   return (
@@ -66,12 +67,19 @@ export function Sidebar() {
         </Link>
 
         <Link
-          to="/reports"
+          to="/funcionarios"
           className="hover:text-blue-400"
         >
-          Relatórios
+          Resetar Senha
         </Link>
+        
       </nav>
+      <button
+        onClick={handleLogout} 
+        className="w-full flex items-center justify-center gap-2 p-3 rounded-lg bg-red-600 hover:bg-red-700 transition-colors font-medium text-white"
+      >
+        <span>Sair do Sistema</span>
+      </button>
     </aside>
   );
 }

@@ -11,3 +11,10 @@ export async function login(
 
   return response.data;
 }
+
+export function handleLogout(){
+  localStorage.removeItem("@carehome:token");
+  localStorage.removeItem("@carehome:user");
+
+  window.location.href = "/";
+}
