@@ -5,8 +5,8 @@ import { getDashboardToday } from "../../services/dashboard";
 import type { DashboardToday } from "../../types/dashboard";
 
 export function Dashboard() {
-  const [data, setData] =
-    useState<DashboardToday | null>(null);
+  const [data, setData] = useState<DashboardToday | null>(null);
+  const nomeUsuarioLogado = localStorage.getItem("@carehome:userName") || "Usuário";
 
   useEffect(() => {
     async function loadDashboard() {
@@ -33,6 +33,9 @@ export function Dashboard() {
 
   return (
      <MainLayout>
+      <div className="mb-2 text-sm font-medium text-gray-500">
+        Bem-vindo(a), <span className="text-gray-900 font-bold">{nomeUsuarioLogado}</span> 👋
+      </div>
       <h1 className="text-3xl font-bold mb-6">
         Dashboard
       </h1>

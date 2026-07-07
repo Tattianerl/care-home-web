@@ -50,3 +50,14 @@ export async function updateOwnPassword(data: UpdatePasswordData): Promise<void>
     },
   });
 }
+
+
+export async function toggleUserStatus(id: string): Promise<void> {
+  const token = localStorage.getItem("@CareHome:token");
+  
+  await api.patch(`/users/${id}/toggle-status`, {}, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}

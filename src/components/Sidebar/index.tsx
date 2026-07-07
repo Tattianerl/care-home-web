@@ -1,5 +1,3 @@
-// src/components/Sidebar/index.tsx
-
 import { Link } from "react-router-dom";
 import { handleLogout } from "../../services/auth";
 
@@ -64,6 +62,12 @@ export function Sidebar() {
           className="hover:text-blue-400"
         >
           Agendamentos
+        </Link>
+        <Link
+          to="/perfil"
+          className="hover:text-blue-400"
+        >
+          Meu Perfil
         </Link>
 
         <Link

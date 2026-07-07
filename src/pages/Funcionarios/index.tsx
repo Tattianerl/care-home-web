@@ -17,11 +17,14 @@ export function Funcionarios() {
   const [modalAberto, setModalAberto] = useState(false);
   const [funcionarioSelecionado, setFuncionarioSelecionado] = useState<Funcionario | null>(null);
   const [carregando, setCarregando] = useState(true);
+  
+  // 1. Corrigido para minúsculo para bater com o Login
+  const nomeUsuarioLogado = localStorage.getItem("@carehome:userName") || "Usuário";
 
-  // 1. Função utilizada apenas para atualizar a lista em segundo plano (após ativação/desativação)
   async function recarregarListaSemLoading() {
     try {
-      const token = localStorage.getItem("@CareHome:token");
+      // 2. Corrigido para minúsculo
+      const token = localStorage.getItem("@carehome:token");
       const response = await api.get("/users", {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -32,10 +35,10 @@ export function Funcionarios() {
   }
 
   useEffect(() => {
-    // 2. Função isolada para a montagem inicial do componente, gerenciando o estado de loading
     async function inicializarComponente() {
       try {
-        const token = localStorage.getItem("@CareHome:token");
+        // 3. Corrigido para minúsculo
+        const token = localStorage.getItem("@carehome:token");
         const response = await api.get("/users", {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -50,14 +53,11 @@ export function Funcionarios() {
     inicializarComponente();
   }, []);
 
-  // 3. Função para alternar o status do funcionário (Ativar/Desativar)
   async function handleToggleStatus(userId: string) {
     try {
       if (confirm("Tem certeza que deseja alterar o status deste funcionário?")) {
         await toggleUserStatus(userId);
-        alert("Status atualizado com sucesso!");
-        
-        // Atualiza a lista na tela de forma limpa e segura
+        alert("Status updated successfully!");
         await recarregarListaSemLoading(); 
       }
     } catch (error) {
@@ -72,6 +72,9 @@ export function Funcionarios() {
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
+      <div className="mb-2 text-sm font-medium text-gray-600">
+        Bem-vindo(a), <span className="text-gray-900 font-bold">{nomeUsuarioLogado}</span> 👋
+      </div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">Equipe CareHome</h1>
         <p className="text-sm text-gray-500">{funcionarios.length} funcionário(s) cadastrado(s)</p>
@@ -100,15 +103,13 @@ export function Funcionarios() {
                     {func.cargo}
                   </span>
                 </td>
-                {/* Coluna de Status Visual */}
                 <td className="p-4 text-center">
                   <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    func.ativo ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                    func.ativo ?? true ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
                   }`}>
-                    {func.ativo ? "Ativo" : "Inativo"}
+                    {func.ativo ?? true ? "Ativo" : "Inativo"}
                   </span>
                 </td>
-                {/* Coluna de Ações com os botões integrados */}
                 <td className="p-4 text-center space-x-2">
                   <button
                     onClick={() => {
@@ -137,7 +138,6 @@ export function Funcionarios() {
         </table>
       </div>
 
-      {/* Janela flutuante (Modal) de Reset */}
       <ResetPasswordModal
         isOpen={modalAberto}
         onClose={() => {
