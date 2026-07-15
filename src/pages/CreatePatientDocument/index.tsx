@@ -3,7 +3,6 @@ import type { FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { AxiosError } from "axios";
 
-import { MainLayout } from "../../layouts/MainLayout";
 import { createPatientDocument } from "../../services/documents";
 
 export function CreatePatientDocument() {
@@ -60,7 +59,7 @@ export function CreatePatientDocument() {
   }
 
   return (
-    <MainLayout>
+   <div>
       <div className="flex justify-between items-center mb-6">
         <div>
           <Link
@@ -127,6 +126,6 @@ export function CreatePatientDocument() {
           </button>
         </div>
       </form>
-    </MainLayout>
+    </div>
   );
 }

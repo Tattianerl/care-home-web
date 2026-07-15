@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { MainLayout } from "../../layouts/MainLayout";
 import { getPatientEvolutions, deleteEvolution, } from "../../services/evolutions";
 import type { Evolution } from "../../types/evolution";
 
@@ -44,7 +43,7 @@ export function PatientEvolutions() {
 }
 
   return (
-    <MainLayout>
+    <div>
       {/* CABEÇALHO */}
       <div className="flex justify-between items-center mb-6">
         <div>
@@ -125,6 +124,6 @@ export function PatientEvolutions() {
           </div>
         )}
       </div>
-    </MainLayout>
+    </div>
   );
 }

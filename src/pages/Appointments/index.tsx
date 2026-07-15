@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { MainLayout } from "../../layouts/MainLayout";
-
 import { getUpcomingAppointments }
 from "../../services/upcomingAppointments";
 
@@ -36,7 +34,7 @@ export function Appointments() {
   }, []);
 
   return (
-    <MainLayout>
+    <div>
 
       <div className="flex justify-between items-center mb-6">
 
@@ -104,6 +102,6 @@ export function Appointments() {
 
       </div>
 
-    </MainLayout>
+    </div>
   );
 }

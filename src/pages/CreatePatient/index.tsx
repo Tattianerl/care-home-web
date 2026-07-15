@@ -1,6 +1,5 @@
 import { useState } from "react";
 
-import { MainLayout } from "../../layouts/MainLayout";
 import { createPatient } from "../../services/createPatient";
 
     export function CreatePatient() {
@@ -47,7 +46,7 @@ import { createPatient } from "../../services/createPatient";
     }
 
   return (
-    <MainLayout>
+    <div>
 
       <h1 className="text-3xl font-bold mb-6">
         Novo Paciente
@@ -187,6 +186,6 @@ import { createPatient } from "../../services/createPatient";
 
       </form>
 
-    </MainLayout>
+    </div>
   );
 }

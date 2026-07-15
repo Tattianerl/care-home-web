@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { MainLayout } from "../../layouts/MainLayout";
 import { getPatient } from "../../services/patient";
 import { api } from "../../services/api"; 
 
@@ -77,14 +76,14 @@ export function PatientDetails() {
     
   if (loading || !patient) {
     return (
-      <MainLayout>
+     
         <p className="text-center p-6 text-gray-600">Carregando dados do paciente...</p>
-      </MainLayout>
+     
     );
   }
 
   return (
-    <MainLayout>
+    <div>
       {/* CABEÇALHO PRINCIPAL DA PÁGINA */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">{patient.nome}</h1>
@@ -270,6 +269,6 @@ export function PatientDetails() {
               </Link>
             </div>
           </div>        
-    </MainLayout>
+    </div>
   );
 }

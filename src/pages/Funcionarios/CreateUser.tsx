@@ -2,16 +2,16 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AxiosError } from "axios";
-
-import { MainLayout } from "../../layouts/MainLayout";
 import { registerNewUser } from "../../services/users";
-
+import { validarCPF } from "../../utils/validarCPF";
+import { cargos } from "../../constants/cargos";
 
 export function CreateUser() {
   const navigate = useNavigate();
 
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
+  const [cpf, setCpf] = useState(""); 
   const [senha, setSenha] = useState("");
   const [cargo, setCargo] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,24 +19,34 @@ export function CreateUser() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
 
-    if (!nome || !email || !senha || !cargo) {
+    // Adicionado validação de preenchimento do CPF
+    if (!nome || !email || !cpf || !senha || !cargo) {
       alert("Por favor, preencha todos os campos.");
+      return;
+    }
+
+    const cpfLimpo = cpf.replace(/\D/g, "");
+
+    // 1. Validação no Frontend (Se foi digitado errado)
+    if (!validarCPF(cpfLimpo)) {
+      alert("Por favor, digite um CPF válido.");
       return;
     }
 
     try {
       setLoading(true);
 
-      // Envia os dados para o serviço
+      // Envia os dados para o serviço (incluindo o cpfLimpo)
       await registerNewUser({
         nome,
         email,
+        cpf: cpfLimpo, 
         senha,
         cargo,
       });
 
       alert("Funcionário registrado com sucesso!");
-      navigate("/"); 
+      navigate("/funcionarios"); 
 
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
@@ -52,11 +62,11 @@ export function CreateUser() {
   }
 
   return (
-    <MainLayout>
+    <div>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <Link to="/users" className="text-blue-600 hover:underline">
-            ← Voltar para colaboradores
+          <Link to="/funcionarios" className="text-blue-600 hover:underline">
+            ← Voltar
           </Link>
           <h1 className="text-3xl font-bold mt-2">Cadastrar Novo Funcionário</h1>
           <p className="text-gray-500 text-sm mt-1">
@@ -76,7 +86,19 @@ export function CreateUser() {
             value={nome}
             onChange={(e) => setNome(e.target.value)}
             placeholder="Ex.: Dra. Ana Souza ou Cuidador Carlos"
-            className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
+            required
+          />
+        </div>
+        <div>
+          <label className="block font-semibold mb-2">CPF (Apenas números)</label>
+          <input
+            type="text"
+            maxLength={11}
+            value={cpf}
+            onChange={(e) => setCpf(e.target.value.replace(/\D/g, ""))}
+            placeholder="00000000000"
+            className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
             required
           />
         </div>
@@ -88,7 +110,7 @@ export function CreateUser() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="nome@casaderepouso.com"
-            className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
             required
           />
         </div>
@@ -100,7 +122,7 @@ export function CreateUser() {
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
             placeholder="Defina a senha inicial do funcionário"
-            className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
             required
           />
         </div>
@@ -108,25 +130,30 @@ export function CreateUser() {
         <div>
           <label className="block font-semibold mb-2">Função / Cargo</label>
           <select
-            value={cargo}
-            onChange={(e) => setCargo(e.target.value)}
-            className="w-full border rounded-lg p-3 bg-white focus:ring-2 focus:ring-blue-500 outline-none"
-            required
-          >
-            <option value="">Selecione a função...</option>
-            <option value="admin">Administrador (Controle Total)</option>
-            <option value="medico">Médico (Evoluções e Prescrições)</option>
-            <option value="enfermeiro">Enfermagem (Medicamentos e Sinais Vitais)</option>
-            <option value="cuidador">Cuidador (Rotina Diária)</option>
-            <option value="nutricionista">Nutricionista (Avaliação Nutricional)</option>
-            <option value="recepcao">Recepção (Cadastro de Residentes)</option>
-          </select>
+              value={cargo}
+              onChange={(e) => setCargo(e.target.value)}
+              className="w-full border rounded-lg p-3"
+              required
+            >
+              <option value="">
+                Selecione...
+              </option>
+
+              {cargos.map((item) => (
+                <option
+                  key={item.value}
+                  value={item.value}
+                >
+                  {item.label}
+                </option>
+              ))}
+            </select>
         </div>
 
         <div className="flex justify-end gap-3 pt-4 border-t">
           <Link
-            to="/users"
-            className="px-6 py-3 rounded-lg bg-gray-200 hover:bg-gray-300"
+            to="/funcionarios"
+            className="px-6 py-3 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium transition-colors"
           >
             Cancelar
           </Link>
@@ -134,12 +161,12 @@ export function CreateUser() {
           <button
             type="submit"
             disabled={loading}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 font-medium"
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 font-medium transition-colors"
           >
             {loading ? "Registrando..." : "Confirmar Cadastro"}
           </button>
         </div>
       </form>
-    </MainLayout>
+    </div>
   );
 }

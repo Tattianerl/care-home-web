@@ -1,12 +1,25 @@
 import { useEffect, useState } from "react";
 import { Card } from "../../components/Card";
-import { MainLayout } from "../../layouts/MainLayout";
+import { DashboardActivity } from "../../components/DashboardActivity";
 import { getDashboardToday } from "../../services/dashboard";
 import type { DashboardToday } from "../../types/dashboard";
+import {
+  Users,
+  CalendarDays,
+  Activity,
+  HeartPulse,
+  FileText,
+  ClipboardList,
+  UserRoundCheck,
+} from "lucide-react";
+import { useAuth } from "../../context/useAuth";
+import { DashboardList } from "../../components/dashboard/DashboardList";
+import { DashboardItem } from "../../components/dashboard/DashboardItem";
 
 export function Dashboard() {
-  const [data, setData] = useState<DashboardToday | null>(null);
-  const nomeUsuarioLogado = localStorage.getItem("@carehome:userName") || "Usuário";
+  const [data, setData] =
+    useState<DashboardToday | null>(null);
+  const { user } = useAuth();  
 
   useEffect(() => {
     async function loadDashboard() {
@@ -25,120 +38,117 @@ export function Dashboard() {
 
   if (!data) {
     return (
-      <MainLayout>
-        <p>Carregando...</p>
-      </MainLayout>
+      <div>
+        <p>Carregando dashboard...</p>
+      </div>
     );
   }
 
   return (
-     <MainLayout>
-      <div className="mb-2 text-sm font-medium text-gray-500">
-        Bem-vindo(a), <span className="text-gray-900 font-bold">{nomeUsuarioLogado}</span> 👋
-      </div>
-      <h1 className="text-3xl font-bold mb-6">
-        Dashboard
+     <div>
+      <h1 className="text-3xl font-bold mt-5">
+        Olá, {user?.nome} 
       </h1>
+      <p className="text-gray-500 mb-5">
+        Confira o resumo das atividades da instituição.
+      </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
 
         <Card
           title="Pacientes Ativos"
           value={data.pacientesAtivos}
+          icon={<Users size={24} />}
+        />
+        <Card
+          title="Profissionais Ativos"
+          value={data.profissionaisAtivos}
+          icon={<UserRoundCheck size={24}/>}
         />
 
         <Card
           title="Atendimentos Hoje"
           value={data.atendimentosHoje}
+          icon={<CalendarDays size={24} />}
         />
-
+        
         <Card
           title="Próximos Atendimentos"
           value={data.proximosAtendimentos}
+          icon={< Activity size={24} />}
         />
 
         <Card
           title="Evoluções Hoje"
           value={data.evolucoesHoje}
+          icon={<ClipboardList size={24} />}
         />
 
         <Card
           title="Documentos Hoje"
           value={data.documentosHoje}
+          icon={<FileText size={24} />}
         />
 
         <Card
           title="Sinais Vitais"
           value={data.sinaisVitaisHoje}
+          icon={<HeartPulse size={24} />}
         />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
 
       {/* Últimos Pacientes */}
-      <div className="bg-white rounded-xl shadow p-4">
-        <h2 className="font-semibold text-lg mb-4">
-          Últimos Pacientes
-        </h2>
-
+      <DashboardList title="Últimos Pacientes">
         {data.ultimosPacientes.map((patient) => (
-          <div
-            key={patient.id}
-            className="border-b py-2"
-          >
-            {patient.nome}
-          </div>
+          <DashboardItem key={patient.id}>
+            <p className="border-b last:border-0 pb-2">
+               {patient.nome}
+            </p>
+          </DashboardItem>
         ))}
-      </div>
+      </DashboardList>
 
       {/* Últimas Evoluções */}
-      <div className="bg-white rounded-xl shadow p-4">
-        <h2 className="font-semibold text-lg mb-4">
-          Últimas Evoluções
-        </h2>
+       <DashboardList title="Últimas Evoluções">
+          {data.ultimasEvolucoes.map((evolution) => (
+            <DashboardItem key={evolution.id}>
+              <p className="font-medium">
+                {evolution.patient.nome}
+              </p>
 
-        {data.ultimasEvolucoes.map((evolution) => (
-          <div
-            key={evolution.id}
-            className="border-b py-2"
-          >
-            <p className="font-medium">
-              {evolution.patient.nome}
-            </p>
-
-            <p className="text-sm text-gray-500">
-              {evolution.descricao}
-            </p>
-          </div>
-        ))}
-      </div>
+              <p className="text-sm text-slate-500">
+                {evolution.descricao}
+              </p>
+            </DashboardItem>
+          ))}
+        </DashboardList>
 
       {/* Próximos Atendimentos */}
-      <div className="bg-white rounded-xl shadow p-4">
-        <h2 className="font-semibold text-lg mb-4">
-          Próximos Atendimentos
-        </h2>
-
-        {data.proximosAtendimentosDetalhados.map(
-          (appointment) => (
-            <div
-              key={appointment.id}
-              className="border-b py-2"
-            >
+      <DashboardList title="Próximos Atendimentos">
+  {data.proximosAtendimentosDetalhados.map(
+    (appointment) => (
+            <DashboardItem key={appointment.id}>
               <p className="font-medium">
                 {appointment.patient.nome}
               </p>
 
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-slate-500">
                 {new Date(
                   appointment.dataHora
                 ).toLocaleString("pt-BR")}
               </p>
-            </div>
+            </DashboardItem>
           )
         )}
-      </div>
+      </DashboardList>
+      <div className="mt-8">
+          <DashboardActivity
+            atividadeRecente={data.atividadeRecente}
+          />
+        </div>
 
     </div>
-    </MainLayout>
+    </div>
   );
 }

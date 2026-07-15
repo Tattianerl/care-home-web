@@ -2,7 +2,7 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import type { FormEvent } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { MainLayout } from "../../layouts/MainLayout";
+
 import { api } from "../../services/api";
 
 interface LocationState {
@@ -60,7 +60,7 @@ export function EditEvolution() {
   }
 
   return (
-    <MainLayout>
+    <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
           <button 
@@ -111,6 +111,6 @@ export function EditEvolution() {
           </button>
         </div>
       </form>
-    </MainLayout>
+    </div>
   );
 }

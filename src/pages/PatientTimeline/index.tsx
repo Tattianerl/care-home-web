@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
-import { MainLayout } from "../../layouts/MainLayout";
-
 import { getTimeline } from "../../services/timeline";
 
 import type { TimelineItem } from "../../types/timeline";
@@ -41,7 +39,7 @@ export function PatientTimeline() {
   }
 
   return (
-    <MainLayout>
+    <div>
 
       <div className="flex justify-between items-center mb-6">
 
@@ -126,6 +124,6 @@ export function PatientTimeline() {
 
       </div>
 
-    </MainLayout>
+    </div>
   );
 }

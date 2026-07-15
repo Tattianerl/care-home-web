@@ -17,9 +17,6 @@ export function Login() {
       // 2. Salva o objeto do usuário inteiro (útil para cargos e outros dados)
       localStorage.setItem("@carehome:user", JSON.stringify(data.user));
 
-      // 3. CORREÇÃO: Salva o nome usando a variável 'data' correta do escopo
-      localStorage.setItem("@carehome:userName", data.user.nome); 
-
       window.location.href = "/dashboard";
     } catch (error) {
       console.error("Erro ao fazer login:", error);

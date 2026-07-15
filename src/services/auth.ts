@@ -15,6 +15,7 @@ export async function login(
 export function handleLogout(){
   localStorage.removeItem("@carehome:token");
   localStorage.removeItem("@carehome:user");
+  localStorage.removeItem("@carehome:userName");
 
   window.location.href = "/";
 }

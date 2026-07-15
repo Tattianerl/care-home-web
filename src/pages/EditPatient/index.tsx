@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { MainLayout } from "../../layouts/MainLayout";
-
 import { getPatient } from "../../services/patient";
 import { updatePatient } from "../../services/updatePatient";
 
@@ -131,7 +129,7 @@ export function EditPatient() {
   }
 
   return (
-    <MainLayout>
+    <div>
 
       <h1 className="text-3xl font-bold mb-6">
         Editar Paciente
@@ -260,6 +258,6 @@ export function EditPatient() {
 
       </form>
 
-    </MainLayout>
+    </div>
   );
 }

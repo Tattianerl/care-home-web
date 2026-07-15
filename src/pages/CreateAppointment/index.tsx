@@ -3,7 +3,7 @@ import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 
 import type { Patient } from "../../types/patient";
-import { MainLayout } from "../../layouts/MainLayout";
+
 import { createAppointment } from "../../services/appointments";
 import { getPatients } from "../../services/patients";
 
@@ -75,7 +75,7 @@ export function CreateAppointment() {
   }
 
   return (
-    <MainLayout>
+    <div>
       <h1 className="text-3xl font-bold mb-6">Novo Agendamento</h1>
 
       <form
@@ -149,6 +149,6 @@ export function CreateAppointment() {
           Salvar Agendamento
         </button>
       </form>
-    </MainLayout>
+    </div>
   );
 }

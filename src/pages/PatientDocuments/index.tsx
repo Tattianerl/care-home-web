@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { MainLayout } from "../../layouts/MainLayout";
-
 import {
   deleteDocument,
   downloadDocument,
@@ -61,7 +59,7 @@ export function PatientDocuments() {
 
   return (
 
-    <MainLayout>
+    <div>
 
       <div className="flex justify-between items-center mb-6">
 
@@ -153,7 +151,7 @@ export function PatientDocuments() {
 
       </div>
 
-    </MainLayout>
+    </div>
 
   );
 

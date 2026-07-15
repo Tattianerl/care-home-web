@@ -1,7 +1,4 @@
 import { useEffect, useState } from "react";
-
-import { MainLayout } from "../../layouts/MainLayout";
-
 import { getPatients } from "../../services/patients";
 
 import type {
@@ -43,7 +40,7 @@ export function Patients() {
     );
 
   return (
-    <MainLayout>
+    <div>
       <h1 className="text-3xl font-bold mb-6">
         Pacientes
       </h1>
@@ -106,6 +103,6 @@ export function Patients() {
         )}
 
       </div>
-    </MainLayout>
+    </div>
   );
 }

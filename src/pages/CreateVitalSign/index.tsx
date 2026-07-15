@@ -1,7 +1,6 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { MainLayout } from "../../layouts/MainLayout";
 import { api } from "../../services/api";
 
 export function CreateVitalSign() {
@@ -46,7 +45,7 @@ export function CreateVitalSign() {
   }
 
   return (
-    <MainLayout>
+    <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-3xl font-bold">Registrar Sinais Vitais</h1>
         <Link
@@ -163,6 +162,6 @@ export function CreateVitalSign() {
           </button>
         </div>
       </form>
-    </MainLayout>
+    </div>
   );
 }

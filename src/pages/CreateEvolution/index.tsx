@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { MainLayout } from "../../layouts/MainLayout";
 import { createEvolution } from "../../services/evolutions";
 
 export function CreateEvolution() {
@@ -45,7 +44,7 @@ export function CreateEvolution() {
   }
 
   return (
-    <MainLayout>
+    <div>
 
       <h1 className="text-3xl font-bold mb-6">
         Nova Evolução
@@ -93,6 +92,6 @@ export function CreateEvolution() {
 
       </form>
 
-    </MainLayout>
+    </div>
   );
 }

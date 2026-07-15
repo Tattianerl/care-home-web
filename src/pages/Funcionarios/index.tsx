@@ -1,14 +1,19 @@
 // src/pages/Funcionarios/index.tsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react"; 
 import { ResetPasswordModal } from "../../components/ResetPasswordModal";
 import { api } from "../../services/api";
+
+import { getCargoLabel } from "../../utils/getCargoLabel";
+import { useAuth } from "../../context/useAuth";
+import { Roles, type Role } from "../../permissions/roles";
+import { Link } from "react-router-dom";
 import { toggleUserStatus } from "../../services/users";
 
 interface Funcionario {
   id: string;
   nome: string;
   email: string;
-  cargo: string;
+  cargo: Role;
   ativo: boolean; 
 }
 
@@ -18,47 +23,41 @@ export function Funcionarios() {
   const [funcionarioSelecionado, setFuncionarioSelecionado] = useState<Funcionario | null>(null);
   const [carregando, setCarregando] = useState(true);
   
-  // 1. Corrigido para minúsculo para bater com o Login
-  const nomeUsuarioLogado = localStorage.getItem("@carehome:userName") || "Usuário";
+  const { token } = useAuth();
 
-  async function recarregarListaSemLoading() {
+  const carregarFuncionarios = useCallback(async () => {
     try {
-      // 2. Corrigido para minúsculo
-      const token = localStorage.getItem("@carehome:token");
       const response = await api.get("/users", {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
+
       setFuncionarios(response.data);
     } catch (error) {
-      console.error("Erro ao atualizar lista", error);
+      console.error("Erro ao carregar funcionários", error);
     }
-  }
+  }, [token]); 
 
   useEffect(() => {
+    if (!token) return;
+
     async function inicializarComponente() {
-      try {
-        // 3. Corrigido para minúsculo
-        const token = localStorage.getItem("@carehome:token");
-        const response = await api.get("/users", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setFuncionarios(response.data);
-      } catch (error) {
-        console.error("Erro ao carregar funcionários", error);
-      } finally {
-        setCarregando(false);
-      }
+      await carregarFuncionarios();
+      setCarregando(false);
     }
 
     inicializarComponente();
-  }, []);
+  }, [token, carregarFuncionarios]); 
 
   async function handleToggleStatus(userId: string) {
     try {
       if (confirm("Tem certeza que deseja alterar o status deste funcionário?")) {
         await toggleUserStatus(userId);
-        alert("Status updated successfully!");
-        await recarregarListaSemLoading(); 
+
+        alert("Status alterado com sucesso!");
+
+        await carregarFuncionarios();
       }
     } catch (error) {
       console.error("Erro detalhado ao alterar status:", error);
@@ -72,14 +71,28 @@ export function Funcionarios() {
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
-      <div className="mb-2 text-sm font-medium text-gray-600">
-        Bem-vindo(a), <span className="text-gray-900 font-bold">{nomeUsuarioLogado}</span> 👋
-      </div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Equipe CareHome</h1>
-        <p className="text-sm text-gray-500">{funcionarios.length} funcionário(s) cadastrado(s)</p>
-      </div>
-
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800">Equipe CareHome</h1>
+          <p className="text-sm text-gray-500">{funcionarios.length} funcionário(s) cadastrado(s)</p>
+        </div>
+        <Link
+          to="/funcionarios/new"
+          className="
+            bg-blue-600
+            hover:bg-blue-700
+            transition-colors
+            text-white
+            px-4
+            py-2
+            rounded-lg
+            font-medium
+          "
+        >
+          + Novo Funcionário
+        </Link>
+      </div> 
+        
       <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
         <table className="w-full text-left border-collapse">
           <thead>
@@ -98,16 +111,16 @@ export function Funcionarios() {
                 <td className="p-4 text-gray-500">{func.email}</td>
                 <td className="p-4">
                   <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                    func.cargo === "admin" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"
+                    func.cargo === Roles.ADMIN ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"
                   }`}>
-                    {func.cargo}
+                    {getCargoLabel(func.cargo)}
                   </span>
                 </td>
                 <td className="p-4 text-center">
                   <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    func.ativo ?? true ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                    func.ativo ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
                   }`}>
-                    {func.ativo ?? true ? "Ativo" : "Inativo"}
+                    {func.ativo ? "Ativo" : "Inativo"}
                   </span>
                 </td>
                 <td className="p-4 text-center space-x-2">
