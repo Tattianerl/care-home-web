@@ -4,6 +4,7 @@ import type { FormEvent } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 
 import { api } from "../../services/api";
+import { Button } from "../../components/ui/Button";
 
 interface LocationState {
   evolution?: {
@@ -91,25 +92,24 @@ export function EditEvolution() {
             required
           />
         </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => navigate(-1)}
+            >
+              Cancelar
+            </Button>
 
-       
-
-        <div className="flex justify-end gap-3 pt-2">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="rounded-lg bg-gray-100 px-6 py-3 font-semibold text-gray-700 transition hover:bg-gray-200"
-          >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            disabled={loading}
-            className="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:bg-gray-400"
-          >
-            {loading ? "Salvando..." : "Salvar Alterações"}
-          </button>
-        </div>
+            <Button
+              type="submit"
+              variant="success"
+              disabled={loading}
+            >
+              {loading ? "Salvando..." : "Salvar Alterações"}
+            </Button>
+          </div>
+                
       </form>
     </div>
   );

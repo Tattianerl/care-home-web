@@ -32,6 +32,7 @@ export const ClinicalRoles = [
   Roles.FISIOTERAPEUTA,
   Roles.NUTRICIONISTA,
   Roles.ASSISTENTE_SOCIAL,
+  Roles.RECEPCAO
 ] as const;
 
 

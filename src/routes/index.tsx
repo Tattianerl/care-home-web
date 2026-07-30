@@ -8,8 +8,7 @@ import { Dashboard } from "../pages/Dashboard";
 import { Patients } from "../pages/Patients";
 import { PatientDetails } from "../pages/PatientDetails";
 import { NotFound } from "../pages/NotFound";
-import { CreatePatient } from "../pages/CreatePatient";
-import { EditPatient } from "../pages/EditPatient";
+
 
 import { Appointments } from "../pages/Appointments"; 
 import { CreateAppointment } from "../pages/CreateAppointment";
@@ -25,6 +24,16 @@ import { CreateUser } from "../pages/Funcionarios/CreateUser";
 import { Funcionarios } from "../pages/Funcionarios";
 import { Perfil } from "../pages/Perfil";
 import { Audit } from "../pages/Audit";
+import { Reports } from "../pages/Reports";
+import { EditAppointment } from "../pages/EditAppointment";
+import { Documents } from "../pages/Documents";
+import { PatientVitalSigns } from "../pages/PatientVitalSigns";
+
+import { EvolutionsToday } from "../pages/EvolutionsToday";
+import { SignatureSettings } from "../pages/SignatureSettings";
+import { VitalSignsOverview } from "../pages/VitalSignsOverview";
+import { EditPatient } from "../pages/EditPatient";
+
 
 
 export function AppRoutes() {
@@ -44,19 +53,29 @@ export function AppRoutes() {
 
         {/* Pacientes */}
         <Route path="/patients" element={<Patients />} />
-        <Route path="/patients/new" element={<CreatePatient />} />
         <Route path="/patients/:id" element={<PatientDetails />} />
         <Route path="/patients/:id/edit" element={<EditPatient />} />
-        <Route
-          path="/patients/:id/vital-signs/new"
-          element={<CreateVitalSign />}
-        />
 
+
+        <Route path="/patients/:id/vital-signs/new" element={<CreateVitalSign />}/>
+        <Route path="/patients/:id/vital-signs" element={<PatientVitalSigns />} />
+        <Route path="/vital-signs" element={<VitalSignsOverview />} />
+        <Route path="/vital-signs/latest" element={<VitalSignsOverview />} />
+       
         {/* Agendamentos */}
         <Route path="/appointments" element={<Appointments />} />
         <Route path="/appointments/new" element={<CreateAppointment />} />
+        <Route
+          path="/appointments/:id/edit"
+          element={<EditAppointment />}
+        />
 
         {/* Evoluções */}
+        <Route
+          path="/evolutions"
+          element={<EvolutionsToday />}
+          />
+
         <Route
           path="/patients/:id/evolutions"
           element={<PatientEvolutions />}
@@ -85,6 +104,11 @@ export function AppRoutes() {
           path="/patients/:id/documents/new"
           element={<CreatePatientDocument />}
         />
+        <Route path="/documents"
+               element={<Documents />} />
+               
+        <Route path="/assinatura" 
+               element={<SignatureSettings />} />      
 
         {/* Somente ADMIN */}
         <Route
@@ -103,13 +127,16 @@ export function AppRoutes() {
             path="/funcionarios"
             element={<Funcionarios />}
           />
-        </Route>
 
+          <Route
+            path="/reports"
+            element={<Reports />}
+            />
         <Route
           path="/audit"
           element={<Audit />}
           />
-
+         </Route>
       </Route>
     </Route>
 

@@ -1,129 +1,234 @@
-import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { getPatientEvolutions, deleteEvolution, } from "../../services/evolutions";
-import type { Evolution } from "../../types/evolution";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  FileText,
+  Loader2,
+} from "lucide-react";
+
+import {
+  Link,
+  useParams,
+} from "react-router-dom";
+
+import {
+  deleteEvolution,
+  getPatientEvolutions,
+} from "../../services/evolutions";
+
+import type {
+  Evolution,
+} from "../../types/evolution";
+
+import { EvolutionCard } from "../../components/evolutions/EvolutionCard";
+import { EvolutionFilters } from "../../components/evolutions/EvolutionFilters";
+import { EmptyEvolution } from "../../components/evolutions/EmptyEvolution";
 
 export function PatientEvolutions() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
+
+  const [patientName, setPatientName] = useState("");
+
   const [evolutions, setEvolutions] = useState<Evolution[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [search, setSearch] = useState("");
+  const [professional, setProfessional] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
+  async function loadEvolutions(patientId: string) {
+    const response =
+      await getPatientEvolutions(patientId);
+
+    setPatientName(response.patient.nome);
+    setEvolutions(response.evolutions);
+  }
 
   useEffect(() => {
-    async function loadData() {
-      if (!id) return;
-      const data = await getPatientEvolutions(id);
-      setEvolutions(data);
+    if (!id) return;
+
+    const patientId = id;
+
+    let cancelled = false;
+
+    async function load() {
+      try {
+        setLoading(true);
+
+        const response =
+          await getPatientEvolutions(patientId);
+
+        if (cancelled) return;
+
+        setPatientName(response.patient.nome);
+        setEvolutions(response.evolutions);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
     }
-    loadData();
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
-  async function handleDelete(id: string) {
+  async function refresh() {
+    if (!id) return;
 
-  const confirmed = window.confirm(
-    "Deseja realmente excluir esta evolução?"
-  );
+    const patientId = id;
 
-  if (!confirmed) return;
+    try {
+      await loadEvolutions(patientId);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
-  try {
-
-    await deleteEvolution(id);
-
-    setEvolutions((old) =>
-      old.filter((item) => item.id !== id)
+  async function handleDelete(evolutionId: string) {
+    const confirmed = window.confirm(
+      "Deseja excluir esta evolução?"
     );
 
-    alert("Evolução removida com sucesso.");
+    if (!confirmed) return;
 
-  } catch (error) {
+    try {
+      await deleteEvolution(evolutionId);
 
-    console.error(error);
-
-    alert("Erro ao excluir evolução.");
+      await refresh();
+    } catch (error) {
+      console.error(error);
+    }
   }
-}
+
+  function clearFilters() {
+    setSearch("");
+    setProfessional("");
+    setStartDate("");
+    setEndDate("");
+  }
+
+  const filtered = useMemo(() => {
+    return evolutions.filter((item) => {
+      const searchMatch =
+        item.descricao
+          .toLowerCase()
+          .includes(search.toLowerCase()) ||
+        item.user.nome
+          .toLowerCase()
+          .includes(search.toLowerCase());
+
+      const professionalMatch =
+        !professional ||
+        item.user.nome
+          .toLowerCase()
+          .includes(professional.toLowerCase());
+
+      const created =
+        new Date(item.createdAt);
+
+      const startMatch =
+        !startDate ||
+        created >= new Date(startDate);
+
+      const endMatch =
+        !endDate ||
+        created <=
+          new Date(`${endDate}T23:59:59`);
+
+      return (
+        searchMatch &&
+        professionalMatch &&
+        startMatch &&
+        endMatch
+      );
+    });
+  }, [
+    evolutions,
+    search,
+    professional,
+    startDate,
+    endDate,
+  ]);
 
   return (
-    <div>
-      {/* CABEÇALHO */}
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-6">
+
+      <div className="flex items-center justify-between">
+
         <div>
-          <Link to={`/patients/${id}`} className="text-sm text-blue-600 hover:underline">
-            ← Voltar para o perfil
-          </Link>
-          <h1 className="text-3xl font-bold mt-1">Evoluções</h1>
+
+          <h1 className="flex items-center gap-2 text-3xl font-bold">
+            <FileText className="text-emerald-600" />
+            Evoluções do Residente
+          </h1>
+
+          <p className="mt-1 text-slate-500">
+            {patientName}
+          </p>
+
         </div>
-        
+
         <Link
           to={`/patients/${id}/evolutions/new`}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-medium shadow-sm"
+          className="
+            rounded-xl
+            bg-emerald-600
+            px-4
+            py-2
+            text-sm
+            font-semibold
+            text-white
+            hover:bg-emerald-700
+          "
         >
           Nova Evolução
         </Link>
+
       </div>
 
-      {/* LISTAGEM */}
-      <div className="bg-white rounded-xl shadow p-6">
-        {evolutions.length === 0 ? (
-          <p className="text-center text-gray-500">Nenhuma evolução registrada.</p>
-        ) : (
-          <div className="space-y-4">
-            {evolutions.map((evolution) => (
-              <div
-                key={evolution.id}
-                className="flex justify-between items-start border rounded-lg p-5 bg-gray-50 hover:shadow-sm transition"
-              >
-                {/* LADO ESQUERDO: CONTEÚDO */}
-                <div className="flex-1 pr-4">
-                  <p className="text-gray-800 text-lg mb-3 whitespace-pre-wrap">
-                    {evolution.descricao}
-                  </p>
+      <EvolutionFilters
+        search={search}
+        professional={professional}
+        startDate={startDate}
+        endDate={endDate}
+        onSearchChange={setSearch}
+        onProfessionalChange={setProfessional}
+        onStartDateChange={setStartDate}
+        onEndDateChange={setEndDate}
+        onClear={clearFilters}
+      />
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-500">
-                    <p>
-                      <strong>Assinatura:</strong> {evolution.assinatura}
-                    </p>
-                    <p>
-                      <strong>Profissional:</strong> {evolution.user.nome}
-                    </p>
-                    <p>
-                      <strong>Cargo:</strong> {evolution.user.cargo}
-                    </p>
-                    <p>
-                      <strong>Data:</strong> {new Date(evolution.createdAt).toLocaleString("pt-BR")}
-                    </p>
-                  </div>
-                </div>
+      {loading ? (
+        <div className="flex justify-center py-10">
+          <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
+        </div>
+      ) : filtered.length === 0 ? (
+        <EmptyEvolution />
+      ) : (
+        <div className="space-y-4">
 
-                {/* LADO DIREITO: BOTÕES DE AÇÃO */}
-                <div className="flex flex-col gap-2 shrink-0">
-                  <Link
-                    to={`/evolutions/${evolution.id}/edit`}
-                    state={{
-                      evolution,
-                    }}
-                    className="bg-white border border-blue-600 text-blue-600 px-4 py-1.5 rounded-md text-sm font-bold hover:bg-blue-50 transition text-center"
-                  >
-                    Editar
-                  </Link>
-                  
-                  {/* Botão de Excluir (Visual) */}
-                  <button
-                    className="bg-white border border-red-200 text-red-500 px-4 py-1.5 rounded-md text-sm font-bold hover:bg-red-50 transition text-center"
-                    onClick={() => {
-                      if(window.confirm("Deseja realmente excluir esta evolução?")) {
-                        handleDelete(evolution.id)
-                        console.log("Excluir", evolution.id);
-                      }
-                    }}
-                  >
-                    Excluir
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+          {filtered.map((evolution) => (
+            <EvolutionCard
+              key={evolution.id}
+              evolution={evolution}
+              deleting={false}
+              onDelete={handleDelete}
+            />
+          ))}
+
+        </div>
+      )}
+
     </div>
   );
 }

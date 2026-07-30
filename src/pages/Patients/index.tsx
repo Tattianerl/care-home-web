@@ -1,108 +1,180 @@
-import { useEffect, useState } from "react";
-import { getPatients } from "../../services/patients";
-
-import type {
-  Patient,
-  PatientsResponse,
-} from "../../types/patient";
+import { useEffect, useState, useCallback } from "react";
+import {
+  Users,
+  Search,
+  UserPlus,
+  Phone,
+  UserCheck,
+  ChevronRight,
+  Loader2,
+  UserX,
+  X,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 
+import { getPatients } from "../../services/patients";
+import type { Patient, PatientsResponse } from "../../types/patient";
+import { RegisterPatientModal } from "../../components/RegisterPatientModal"; 
+
 export function Patients() {
-  const [patients, setPatients] =
-    useState<Patient[]>([]);
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const [search, setSearch] =
-    useState("");
-
-  useEffect(() => {
-    async function loadPatients() {
-      try {
-        const response:
-          PatientsResponse =
-          await getPatients();
-
-        setPatients(response.data);
-      } catch (error) {
-        console.error(error);
-      }
+  // Função para carregar os pacientes refatorada com useCallback
+  const loadPatients = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response: PatientsResponse = await getPatients();
+      setPatients(response.data || []);
+    } catch (error) {
+      console.error("Erro ao carregar pacientes:", error);
+    } finally {
+      setLoading(false);
     }
-
-    loadPatients();
   }, []);
 
-  const filteredPatients =
-    patients.filter((patient) =>
-      patient.nome
-        .toLowerCase()
-        .includes(
-          search.toLowerCase()
-        )
-    );
+  useEffect(() => {
+    loadPatients();
+  }, [loadPatients]);
+
+  const filteredPatients = patients.filter(
+    (patient) =>
+      patient.nome.toLowerCase().includes(search.toLowerCase()) ||
+      patient.responsavel?.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-6">
-        Pacientes
-      </h1>
+    <div className="space-y-8 pb-10">
+      {/* Cabeçalho da Página */}
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 shadow-xs">
+            <Users className="h-5 w-5" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">
+              Residentes
+            </h1>
+            <p className="mt-0.5 text-xs font-medium text-slate-500">
+              Gerencie e acompanhe os prontuários dos residentes cadastrados.
+            </p>
+          </div>
+        </div>
 
-      <input
-        type="text"
-        placeholder="Buscar paciente..."
-        value={search}
-        onChange={(e) =>
-          setSearch(e.target.value)
-        }
-        className="
-          w-full
-          p-3
-          border
-          rounded-lg
-          mb-6
-        "
-      />
+        {/* Botão para Abrir o Modal de Cadastro */}
+        <button
+          type="button"
+          onClick={() => setIsModalOpen(true)}
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition-all hover:bg-emerald-700 active:scale-[0.98] cursor-pointer"
+        >
+          <UserPlus className="h-4 w-4" />
+          <span>Novo Residente</span>
+        </button>
+      </header>
 
-      <div className="grid gap-4">
-
-        {filteredPatients.map(
-          (patient) => (
-            <Link
-              to={`/patients/${patient.id}`}
-              key={patient.id}
-              className="
-                bg-white
-                rounded-xl
-                shadow
-                p-4
-              "
-            >
-              <h2 className="font-bold text-lg">
-                {patient.nome}
-              </h2>
-
-              <p>
-                Responsável:
-                {" "}
-                {patient.responsavel}
-              </p>
-
-              <p>
-                Telefone:
-                {" "}
-                {patient.telefone}
-              </p>
-
-              <p>
-                Status:
-                {" "}
-                {patient.ativo
-                  ? "Ativo"
-                  : "Inativo"}
-              </p>
-            </Link>
-          )
+      {/* Barra de Pesquisa */}
+      <div className="relative">
+        <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+        <input
+          type="text"
+          placeholder="Buscar residente por nome ou responsável..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-10 text-sm text-slate-800 placeholder-slate-400 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+        />
+        {search && (
+          <button
+            type="button"
+            onClick={() => setSearch("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+          >
+            <X className="h-4 w-4" />
+          </button>
         )}
-
       </div>
+
+      {/* Conteúdo Principal / Listagem */}
+      {loading ? (
+        <div className="flex h-64 items-center justify-center">
+          <div className="flex items-center gap-3 text-slate-500 font-medium text-sm">
+            <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
+            <span>Carregando lista de residentes...</span>
+          </div>
+        </div>
+      ) : filteredPatients.length === 0 ? (
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-12 text-center shadow-xs">
+          <UserX className="mx-auto h-10 w-10 text-slate-300 mb-3" />
+          <h3 className="text-sm font-bold text-slate-800">
+            Nenhum residente encontrado
+          </h3>
+          <p className="mt-1 text-xs text-slate-500">
+            {search
+              ? "Tente ajustar os termos de busca para encontrar o registro."
+              : "Não há residentes cadastrados no sistema no momento."}
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredPatients.map((patient) => (
+            <Link
+              key={patient.id}
+              to={`/patients/${patient.id}`}
+              className="group relative flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs transition-all hover:border-emerald-300 hover:shadow-md"
+            >
+              <div className="space-y-3">
+                {/* Header do Card */}
+                <div className="flex items-start justify-between gap-2">
+                  <h2 className="font-bold text-slate-900 group-hover:text-emerald-600 transition-colors line-clamp-1">
+                    {patient.nome}
+                  </h2>
+                  <span
+                    className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                      patient.ativo !== false
+                        ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                        : "bg-slate-100 text-slate-600 border border-slate-200"
+                    }`}
+                  >
+                    {patient.ativo !== false ? "Ativo" : "Inativo"}
+                  </span>
+                </div>
+
+                {/* Detalhes do Residente */}
+                <div className="space-y-1.5 text-xs text-slate-600">
+                  <div className="flex items-center gap-1.5">
+                    <UserCheck className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                    <span className="truncate">
+                      <strong className="font-semibold text-slate-700">Resp:</strong>{" "}
+                      {patient.responsavel || "Não informado"}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <Phone className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                    <span className="truncate">
+                      {patient.telefone || "Sem telefone cadastrado"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Rodapé do Card */}
+              <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-xs font-semibold text-emerald-600">
+                <span>Acessar prontuário</span>
+                <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {/* Modal de Cadastro de Residente */}
+      <RegisterPatientModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={loadPatients}
+      />
     </div>
   );
 }

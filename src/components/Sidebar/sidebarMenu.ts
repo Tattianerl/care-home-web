@@ -6,6 +6,10 @@ import {
   UserCog,
   FileBarChart,
   ClipboardCheck,
+  FolderKanban,
+  ClipboardList,
+  PenTool,
+  Activity,
 } from "lucide-react";
 
 import { Roles } from "../../permissions/roles";
@@ -29,9 +33,39 @@ export const menuItems: MenuItem[] = [
     ],
   },
   {
-    title: "Pacientes",
+    title: "Residentes",
     path: "/patients",
     icon: Users,
+    group: "Atendimento",
+    roles: [
+      Roles.ADMIN,
+      Roles.ENFERMEIRO,
+      Roles.TECNICO_ENFERMAGEM,
+      Roles.MEDICO,
+      Roles.FISIOTERAPEUTA,
+      Roles.NUTRICIONISTA,
+      Roles.ASSISTENTE_SOCIAL,
+  ],
+  },
+  {
+    title: "Evoluções",
+    path: "/evolutions",
+    icon: ClipboardList,
+    group: "Atendimento",
+    roles: [
+      Roles.ADMIN,
+      Roles.ENFERMEIRO,
+      Roles.TECNICO_ENFERMAGEM,
+      Roles.MEDICO,
+      Roles.FISIOTERAPEUTA,
+      Roles.NUTRICIONISTA,
+      Roles.ASSISTENTE_SOCIAL,
+  ],
+  },
+  {
+    title: "Sinais Vitais",
+    path: "/vital-signs",
+    icon: Activity,
     group: "Atendimento",
     roles: [
       Roles.ADMIN,
@@ -60,6 +94,39 @@ export const menuItems: MenuItem[] = [
     ],
   },
   {
+      title: "Documentos",
+      path: "/documents",
+      icon: FolderKanban,
+      group: "Atendimento",
+      roles: [
+        Roles.ADMIN,
+        Roles.ENFERMEIRO,
+        Roles.TECNICO_ENFERMAGEM,
+        Roles.MEDICO,
+        Roles.FISIOTERAPEUTA,
+        Roles.NUTRICIONISTA,
+        Roles.ASSISTENTE_SOCIAL,
+        Roles.RECEPCAO,
+      ],
+    },
+  {
+      title: "Assinatura_Digital",
+      path: "/assinatura",
+      icon: PenTool,
+      group: "Atendimento",
+      roles: [
+        Roles.ADMIN,
+        Roles.ENFERMEIRO,
+        Roles.TECNICO_ENFERMAGEM,
+        Roles.MEDICO,
+        Roles.FISIOTERAPEUTA,
+        Roles.NUTRICIONISTA,
+        Roles.ASSISTENTE_SOCIAL,
+       
+      ],
+    },
+
+  {
     title: "Meu Perfil",
     path: "/perfil",
     icon: User,
@@ -72,7 +139,7 @@ export const menuItems: MenuItem[] = [
       Roles.FISIOTERAPEUTA,
       Roles.NUTRICIONISTA,
       Roles.ASSISTENTE_SOCIAL,
-     
+      Roles.RECEPCAO,
     ],
   },
   {
@@ -84,7 +151,7 @@ export const menuItems: MenuItem[] = [
   },
   {
     title: "Relatórios",
-    path: "/relatorios",
+    path: "/reports",
     icon: FileBarChart,
     group: "Administração",
     roles: [Roles.ADMIN],

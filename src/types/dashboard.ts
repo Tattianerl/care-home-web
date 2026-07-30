@@ -92,8 +92,7 @@ export interface DashboardToday {
 
   // Auditoria
 
-  atividadeRecente: DashboardAudit[];
-
+ 
   // Data referência
 
   dataReferencia: string;

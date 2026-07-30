@@ -16,7 +16,7 @@ export async function getAuditLogs(params?: {
   endDate?: string;
 }) {
   const { data } = await api.get<AuditResponse>(
-    "/auth/audit",
+   "/audit-logs",
     {
       params,
     }
@@ -30,7 +30,7 @@ export async function getAuditSummary(
   month?: string
 ) {
   const { data } = await api.get<AuditSummary>(
-    "/auth/audit/summary",
+    "/dashboard/audit-summary",
     {
       params: {
         year,
@@ -44,7 +44,7 @@ export async function getAuditSummary(
 
 export async function exportAuditLogs() {
   const response = await api.get(
-    "/auth/reports/audit",
+    "/export/audit-logs",
     {
       responseType: "blob",
     }

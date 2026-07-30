@@ -1,4 +1,14 @@
 import { api } from "./api";
+import type { PatientDocument } from "../types/document";
+
+
+/**
+ * 🌐 Listar todos os documentos do sistema (para a tela /documents)
+ */
+export async function getAllDocuments(): Promise<PatientDocument[]> {
+  const response = await api.get<PatientDocument[]>("/documents");
+  return response.data;
+}
 
 /**
  * 📄 Enviar documento para o paciente
@@ -22,7 +32,7 @@ export async function createPatientDocument(
 }
 
 /**
- * 📥 Listar documentos
+ * 📥 Listar documentos de um paciente específico
  */
 export async function getPatientDocuments(patientId: string) {
   const response = await api.get(
@@ -33,7 +43,7 @@ export async function getPatientDocuments(patientId: string) {
 }
 
 /**
- * ⬇ Download
+ * ⬇ Download de documento
  */
 export async function downloadDocument(documentId: string) {
   try {
@@ -49,14 +59,14 @@ export async function downloadDocument(documentId: string) {
     let fileName = "documento";
 
     if (disposition) {
-      // Um regex mais seguro para capturar o filename com ou sem aspas
+      // Um regex seguro para capturar o filename com ou sem aspas
       const match = disposition.match(/filename=(?:"([^"]+)"|([^;]+))/);
       if (match) {
         fileName = match[1] || match[2];
       }
     }
 
-    // Passamos o response.data direto 
+    // Passamos o response.data direto (Blob)
     const url = window.URL.createObjectURL(response.data);
     const link = document.createElement("a");
 
@@ -73,12 +83,11 @@ export async function downloadDocument(documentId: string) {
     console.error("Erro no download:", error);
     alert("Arquivo não encontrado ou corrompido no servidor.");
   }
- }
-  /**
+}
+
+/**
  * 🗑 Excluir documento
  */
-    export async function deleteDocument(documentId: string) {
-      await api.delete(`/documents/${documentId}`);
-    }
-
-  
+export async function deleteDocument(documentId: string) {
+  await api.delete(`/documents/${documentId}`);
+}

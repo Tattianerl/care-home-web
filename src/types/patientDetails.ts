@@ -14,6 +14,7 @@ export interface Evolution {
 export interface PatientDetails {
   id: string;
   nome: string;
+  cpf?: string | null;
   dataNascimento: string;
 
   responsavel: string;
