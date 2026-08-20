@@ -33,8 +33,8 @@ import { EvolutionsToday } from "../pages/EvolutionsToday";
 import { SignatureSettings } from "../pages/SignatureSettings";
 import { VitalSignsOverview } from "../pages/VitalSignsOverview";
 import { EditPatient } from "../pages/EditPatient";
-
-
+import { PatientNutritionHistory } from "../pages/PatientNutritionHistory";
+import { TodayNutritionalAssessments } from "../pages/TodayNutritionalAssessments";
 
 export function AppRoutes() {
   return (
@@ -48,6 +48,7 @@ export function AppRoutes() {
     <Route element={<ProtectedRoute />}>
       <Route element={<MainLayout />}>
 
+        {/* Dashboard */}
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/perfil" element={<Perfil />} />
 
@@ -56,11 +57,15 @@ export function AppRoutes() {
         <Route path="/patients/:id" element={<PatientDetails />} />
         <Route path="/patients/:id/edit" element={<EditPatient />} />
 
-
+        {/* Sinais vitais */}
         <Route path="/patients/:id/vital-signs/new" element={<CreateVitalSign />}/>
         <Route path="/patients/:id/vital-signs" element={<PatientVitalSigns />} />
         <Route path="/vital-signs" element={<VitalSignsOverview />} />
         <Route path="/vital-signs/latest" element={<VitalSignsOverview />} />
+
+        {/* Nutrição */}
+        <Route path="/patients/:id/nutrition" element={<PatientNutritionHistory />} />
+        <Route path="/nutritional-assessments/today" element={<TodayNutritionalAssessments />} />
        
         {/* Agendamentos */}
         <Route path="/appointments" element={<Appointments />} />
@@ -88,6 +93,8 @@ export function AppRoutes() {
           path="/evolutions/:id/edit"
           element={<EditEvolution />}
         />
+        {/* Medicação */}
+
 
         {/* Timeline */}
         <Route

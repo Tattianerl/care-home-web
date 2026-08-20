@@ -1,4 +1,4 @@
-import type { AuditLog } from "../../types/audit";
+import type { AuditLog } from "../../types/auditLog";
 import { Badge } from "../ui/Badge";
 import { ShieldAlert } from "lucide-react";
 

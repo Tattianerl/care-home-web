@@ -1,25 +1,27 @@
+import type { PatientSummary, UserSummary } from "./common";
+
 export interface Evolution {
   id: string;
+
   descricao: string;
-  assinatura?: string | null;
+
+  assinatura?: string;
+
   createdAt: string;
 
-  patient: {
-    id: string;
-    nome: string;
-  };
+  patientId: string;
+  userId: string;
 
-  user: {
-    id?: string;
-    nome: string;
-    cargo: string;
-  };
+  patient: PatientSummary;
+  user: UserSummary;
 }
+
 
 export interface EvolutionListResponse {
   total: number;
   evolutions: Evolution[];
 }
+
 
 export interface PatientEvolutionResponse {
   patient: {

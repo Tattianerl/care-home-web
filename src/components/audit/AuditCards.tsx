@@ -5,7 +5,7 @@ import {
   Trash2,
 } from "lucide-react";
 
-import type { AuditSummary } from "../../types/audit";
+import type { AuditSummary } from "../../types/auditLog";
 
 interface Props {
   summary: AuditSummary;

@@ -1,83 +1,87 @@
-import {
-  Activity,
-  AlertTriangle,
-} from "lucide-react";
+import { Activity, AlertOctagon, AlertTriangle } from "lucide-react";
+import type { HealthStatus } from "../../types/vitalSigns";
+
+type StatusFilter = HealthStatus | "all";
 
 interface VitalSignsCardsProps {
   total: number;
   alert: number;
   critical: number;
+  selectedStatus?: StatusFilter;
+  onSelectStatus?: (status: StatusFilter) => void;
 }
 
 export function VitalSignsCards({
   total,
   alert,
   critical,
+  selectedStatus = "all",
+  onSelectStatus,
 }: VitalSignsCardsProps) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
       {/* Total */}
-      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            Aferições
-          </span>
-
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-            <Activity className="h-4 w-4" />
-          </div>
+      <button
+        type="button"
+        onClick={() => onSelectStatus?.("all")}
+        className={`flex items-center justify-between p-5 rounded-2xl border transition-all text-left ${
+          selectedStatus === "all"
+            ? "border-emerald-500 bg-emerald-50/40 ring-2 ring-emerald-500/20 shadow-sm"
+            : "border-slate-200 bg-white hover:border-slate-300"
+        }`}
+      >
+        <div>
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+            Total de Aferições
+          </p>
+          <p className="text-2xl font-bold text-slate-900 mt-1">{total}</p>
         </div>
-
-        <p className="mt-2 text-2xl font-bold text-slate-900">
-          {total}
-        </p>
-
-        <p className="mt-1 text-xs text-slate-500">
-          Registros encontrados
-        </p>
-      </div>
+        <div className="p-3 bg-emerald-100/60 rounded-xl text-emerald-600">
+          <Activity className="h-6 w-6" />
+        </div>
+      </button>
 
       {/* Alerta */}
-      <div className="rounded-2xl border border-amber-200 bg-amber-50/40 p-5 shadow-xs">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-wider text-amber-700">
-            Em Alerta
-          </span>
-
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
-            <AlertTriangle className="h-4 w-4" />
-          </div>
+      <button
+        type="button"
+        onClick={() => onSelectStatus?.("alerta")}
+        className={`flex items-center justify-between p-5 rounded-2xl border transition-all text-left ${
+          selectedStatus === "alerta"
+            ? "border-amber-500 bg-amber-50/40 ring-2 ring-amber-500/20 shadow-sm"
+            : "border-slate-200 bg-white hover:border-slate-300"
+        }`}
+      >
+        <div>
+          <p className="text-xs font-semibold text-amber-600 uppercase tracking-wider">
+            Atenção / Alerta
+          </p>
+          <p className="text-2xl font-bold text-amber-700 mt-1">{alert}</p>
         </div>
-
-        <p className="mt-2 text-2xl font-bold text-amber-900">
-          {alert}
-        </p>
-
-        <p className="mt-1 text-xs text-amber-700">
-          Necessitam acompanhamento
-        </p>
-      </div>
+        <div className="p-3 bg-amber-100 rounded-xl text-amber-600">
+          <AlertTriangle className="h-6 w-6" />
+        </div>
+      </button>
 
       {/* Crítico */}
-      <div className="rounded-2xl border border-rose-200 bg-rose-50/40 p-5 shadow-xs">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-wider text-rose-700">
-            Crítico
-          </span>
-
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-rose-100 text-rose-700">
-            <AlertTriangle className="h-4 w-4" />
-          </div>
+      <button
+        type="button"
+        onClick={() => onSelectStatus?.("critico")}
+        className={`flex items-center justify-between p-5 rounded-2xl border transition-all text-left ${
+          selectedStatus === "critico"
+            ? "border-rose-500 bg-rose-50/40 ring-2 ring-rose-500/20 shadow-sm"
+            : "border-slate-200 bg-white hover:border-slate-300"
+        }`}
+      >
+        <div>
+          <p className="text-xs font-semibold text-rose-600 uppercase tracking-wider">
+            Casos Críticos
+          </p>
+          <p className="text-2xl font-bold text-rose-700 mt-1">{critical}</p>
         </div>
-
-        <p className="mt-2 text-2xl font-bold text-rose-900">
-          {critical}
-        </p>
-
-        <p className="mt-1 text-xs text-rose-700">
-          Requer intervenção imediata
-        </p>
-      </div>
+        <div className="p-3 bg-rose-100 rounded-xl text-rose-600">
+          <AlertOctagon className="h-6 w-6" />
+        </div>
+      </button>
     </div>
   );
 }

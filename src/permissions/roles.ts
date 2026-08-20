@@ -1,40 +1,26 @@
-export const Roles = {
-  ADMIN: "admin",
+import { UserRole } from "../types/enums";
 
-  ENFERMEIRO: "enfermeiro",
+export const Roles = UserRole;
 
-  TECNICO_ENFERMAGEM: "tecnico_enfermagem",
-
-  MEDICO: "medico",
-
-  FISIOTERAPEUTA: "fisioterapeuta",
-
-  NUTRICIONISTA: "nutricionista",
-
-  ASSISTENTE_SOCIAL: "assistente_social",
-
-  RECEPCAO: "recepcao",
-
-} as const;
-
-
-export type Role = typeof Roles[keyof typeof Roles];
+export type Role = UserRole;
 
 export const AdminRoles = [
   Roles.ADMIN,
 ] as const;
 
-
 export const ClinicalRoles = [
+  Roles.ADMIN,
+  Roles.COORDENADOR,
   Roles.ENFERMEIRO,
   Roles.TECNICO_ENFERMAGEM,
   Roles.MEDICO,
   Roles.FISIOTERAPEUTA,
   Roles.NUTRICIONISTA,
+  Roles.PSICOLOGO,
   Roles.ASSISTENTE_SOCIAL,
-  Roles.RECEPCAO
+  Roles.TERAPEUTA_OCUPACIONAL,
+  Roles.FONOAUDIOLOGO,
+  Roles.RECEPCAO,
 ] as const;
-
-
 
 export const AllRoles = Object.values(Roles);

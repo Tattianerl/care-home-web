@@ -1,93 +1,99 @@
 import { api } from "./api";
-import type { PatientDocument } from "../types/document";
 
+import type { DocumentType } from "../types/enums";
+import type { PatientDocument } from "../types/patientDocument";
 
 /**
- * 🌐 Listar todos os documentos do sistema (para a tela /documents)
+ * Lista todos os documentos disponíveis.
  */
 export async function getAllDocuments(): Promise<PatientDocument[]> {
-  const response = await api.get<PatientDocument[]>("/documents");
-  return response.data;
+  const { data } = await api.get<PatientDocument[]>("/documents");
+
+  return data;
 }
 
 /**
- * 📄 Enviar documento para o paciente
+ * Envia um novo documento para um residente.
  */
 export async function createPatientDocument(
   patientId: string,
   nome: string,
-  file: File
-) {
+  file: File,
+  tipo: DocumentType
+): Promise<PatientDocument> {
   const formData = new FormData();
 
   formData.append("nome", nome);
+  formData.append("tipo", tipo);
   formData.append("file", file);
 
-  const response = await api.post(
+  const { data } = await api.post<PatientDocument>(
     `/patients/${patientId}/documents`,
     formData
   );
 
-  return response.data;
+  return data;
 }
 
 /**
- * 📥 Listar documentos de um paciente específico
+ * Lista os documentos de um residente.
  */
-export async function getPatientDocuments(patientId: string) {
-  const response = await api.get(
+export async function getPatientDocuments(
+  patientId: string
+): Promise<PatientDocument[]> {
+  const { data } = await api.get<PatientDocument[]>(
     `/patients/${patientId}/documents`
   );
 
-  return response.data;
+  return data;
 }
 
 /**
- * ⬇ Download de documento
+ * Faz o download de um documento.
  */
-export async function downloadDocument(documentId: string) {
-  try {
-    const response = await api.get(
-      `/documents/${documentId}/download`,
-      {
-        responseType: "blob", 
-      }
+export async function downloadDocument(
+  documentId: string
+): Promise<void> {
+  const response = await api.get<Blob>(
+    `/documents/${documentId}/download`,
+    {
+      responseType: "blob",
+    }
+  );
+
+  const disposition = response.headers["content-disposition"];
+
+  let fileName = "documento";
+
+  if (disposition) {
+    const match = disposition.match(
+      /filename=(?:"([^"]+)"|([^;]+))/
     );
 
-    // O Axios converte os headers para letras minúsculas
-    const disposition = response.headers["content-disposition"];
-    let fileName = "documento";
-
-    if (disposition) {
-      // Um regex seguro para capturar o filename com ou sem aspas
-      const match = disposition.match(/filename=(?:"([^"]+)"|([^;]+))/);
-      if (match) {
-        fileName = match[1] || match[2];
-      }
+    if (match) {
+      fileName = (match[1] || match[2]).trim();
     }
-
-    // Passamos o response.data direto (Blob)
-    const url = window.URL.createObjectURL(response.data);
-    const link = document.createElement("a");
-
-    link.href = url;
-    link.download = fileName.trim();
-
-    document.body.appendChild(link);
-    link.click();
-    
-    // Limpeza
-    link.remove();
-    window.URL.revokeObjectURL(url);
-  } catch (error) {
-    console.error("Erro no download:", error);
-    alert("Arquivo não encontrado ou corrompido no servidor.");
   }
+
+  const url = window.URL.createObjectURL(response.data);
+
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = fileName;
+
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+  window.URL.revokeObjectURL(url);
 }
 
 /**
- * 🗑 Excluir documento
+ * Exclui um documento.
  */
-export async function deleteDocument(documentId: string) {
+export async function deleteDocument(
+  documentId: string
+): Promise<void> {
   await api.delete(`/documents/${documentId}`);
 }

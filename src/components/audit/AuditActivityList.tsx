@@ -4,7 +4,7 @@ import {
 
 import type {
   AuditLog,
-} from "../../types/audit";
+} from "../../types/auditLog";
 
 
 interface AuditActivityListProps {

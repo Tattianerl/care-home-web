@@ -1,60 +1,58 @@
 import { api } from "./api";
 
-import type { Appointment } from "../types/appointment";
-import type { AppointmentStatusType } from "../constants/appointmentStatus";
+import type { Appointment, TodayAppointment } from "../types/appointment";
+import type { AppointmentStatus } from "../types/enums";
 
-interface AppointmentFilters {
-  status?: string;
+export interface AppointmentFilters {
+  status?: AppointmentStatus;
   patientId?: string;
   userId?: string;
   startDate?: string;
   endDate?: string;
 }
 
-// =========================
+export interface CreateAppointmentInput {
+  titulo: string;
+  dataHora: string;
+  local?: string;
+  observacoes?: string;
+  patientId: string;
+}
+
+export interface UpdateAppointmentInput {
+  titulo: string;
+  dataHora: string;
+  local?: string;
+  observacoes?: string;
+}
+
 // Listar agendamentos
-// =========================
 export async function getAppointments(
   params?: AppointmentFilters
 ): Promise<Appointment[]> {
+  const { data } = await api.get<Appointment[]>("/appointments", {
+    params,
+  });
 
-  const response = await api.get(
-    "/appointments",
-    {
-      params,
-    }
-  );
-
-  return response.data;
+  return data;
 }
 
-// =========================
 // Buscar por ID
-// =========================
 export async function getAppointmentById(
   id: string
 ): Promise<Appointment> {
-
-  const response = await api.get(
+  const { data } = await api.get<Appointment>(
     `/appointments/${id}`
   );
 
-  return response.data;
+  return data;
 }
 
-// =========================
 // Criar agendamento
-// =========================
 export async function createAppointment(
-  data: {
-    titulo: string;
-    dataHora: string;
-    observacoes?: string;
-    patientId: string;
-  }
+  data: CreateAppointmentInput
 ): Promise<Appointment> {
-
-  const response = await api.post(
+  const response = await api.post<Appointment>(
     "/appointments",
     data
   );
@@ -62,19 +60,12 @@ export async function createAppointment(
   return response.data;
 }
 
-// =========================
 // Atualizar agendamento
-// =========================
 export async function updateAppointment(
   id: string,
-  data: {
-    titulo: string;
-    dataHora: string;
-    observacoes?: string;
-  }
+  data: UpdateAppointmentInput
 ): Promise<Appointment> {
-
-  const response = await api.put(
+  const response = await api.put<Appointment>(
     `/appointments/${id}`,
     data
   );
@@ -82,44 +73,33 @@ export async function updateAppointment(
   return response.data;
 }
 
-// =========================
 // Atualizar status
-// =========================
 export async function updateAppointmentStatus(
   id: string,
-  status: AppointmentStatusType
+  status: AppointmentStatus
 ): Promise<Appointment> {
-
-  const response = await api.patch(
+  const response = await api.patch<Appointment>(
     `/appointments/${id}/status`,
-    {
-       status ,
-    }
+    { status }
   );
 
   return response.data;
 }
 
-// =========================
 // Agendamentos de hoje
-// =========================
-export async function getTodayAppointments(): Promise<Appointment[]> {
-
-  const response = await api.get(
+export async function getTodayAppointments(): Promise<TodayAppointment[]> {
+  const { data } = await api.get<TodayAppointment[]>(
     "/appointments/today"
   );
 
-  return response.data;
+  return data;
 }
 
-// =========================
 // Próximos agendamentos
-// =========================
 export async function getUpcomingAppointments(): Promise<Appointment[]> {
-
-  const response = await api.get(
+  const { data } = await api.get<Appointment[]>(
     "/appointments/upcoming"
   );
 
-  return response.data;
+  return data;
 }

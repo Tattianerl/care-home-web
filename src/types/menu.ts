@@ -1,10 +1,10 @@
 import type { LucideIcon } from "lucide-react";
-import type { Role } from "../permissions/roles";
+import type { UserRole } from "../types/enums";
 
-export interface MenuItem{
-    title: string;
-    path: string;
-    icon: LucideIcon;
-    roles: Role[];
-    group: "Principal" | "Atendimento" | "Administração";
+export interface MenuItem {
+  title: string;
+  path: string;
+  icon: LucideIcon;
+  roles: UserRole[];
+  group: "Principal" | "Atendimento" | "Administração";
 }

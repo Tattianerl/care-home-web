@@ -1,32 +1,52 @@
-export interface Evolution {
-  id: string;
-  descricao: string;
-  createdAt: string;
-
-  user: {
-    id: string;
-    nome: string;
-    email: string;
-    cargo: string;
-  };
-}
+import type {
+  BloodType,
+  DependencyLevel,
+  Gender,
+  MaritalStatus,
+} from "./enums";
+import type { Evolution } from "./evolution";
 
 export interface PatientDetails {
   id: string;
   nome: string;
-  cpf?: string | null;
+
   dataNascimento: string;
+
+  cpf?: string | null;
+  rg?: string | null;
+  naturalidade?: string | null;
+  estadoCivil?: MaritalStatus | null;
+  cartaoSus?: string | null;
+  fotoUrl?: string | null;
+  quartoLeito?: string | null;
+  genero: Gender;
 
   responsavel: string;
   telefone: string;
 
-  historicoMedico: string | null;
-  medicamentos: string | null;
-  alergias: string | null;
-  diagnosticos: string | null;
-  observacoes: string | null;
+  responsavelCpf?: string | null;
+  responsavelGrauParentesco?: string | null;
+  responsavelEmail?: string | null;
+  responsavelEndereco?: string | null;
+
+  tipoSanguineo?: BloodType | null;
+  planoSaude?: string | null;
+  contatoEmergencia?: string | null;
+  grauDependencia?: DependencyLevel | null;
+
+  historicoMedico?: string | null;
+  alergias?: string | null;
+  diagnosticos?: string | null;
+  restricaoAlimentar?: string | null;
+  observacoes?: string | null;
 
   ativo: boolean;
+  falecido: boolean;
 
-  evolutions: Evolution[];
+  dataInternacao?: string | null;
+  dataAlta?: string | null;
+
+  createdAt: string;
+
+  evolutions?: Evolution[];
 }

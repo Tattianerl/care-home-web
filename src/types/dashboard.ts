@@ -73,7 +73,7 @@ export interface DashboardToday {
   documentosHoje: number;
 
   sinaisVitaisHoje: number;
-
+  avaliacoesNutricionaisHoje?: number;
 
 
   // Listas

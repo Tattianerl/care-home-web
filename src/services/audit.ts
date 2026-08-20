@@ -3,7 +3,7 @@ import { api } from "./api";
 import type {
     AuditResponse,
     AuditSummary,
-} from "../types/audit";
+} from "../types/auditLog";
 
 export async function getAuditLogs(params?: {
   page?: number;

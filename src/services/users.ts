@@ -1,52 +1,65 @@
 import { api } from "./api";
 
-interface RegisterUserData {
+import type { User } from "../types/user";
+import type { UserRole } from "../types/enums";
+
+export interface RegisterUserData {
   nome: string;
   email: string;
   cpf: string;
+  cargo: UserRole;
   senha?: string;
-  cargo: string;
+  telefone?: string;
+  registroProfissional?: string;
+  dataAdmissao?: string;
+  observacoes?: string;
+  fotoUrl?: string;
+  assinatura?: string;
 }
 
-export async function registerNewUser(data: RegisterUserData) {
-  const response = await api.post("/register", data);
-
-  return response.data;
-}
-
-interface ResetPasswordData {
+export interface ResetPasswordData {
   funcionarioId: string;
   novaSenhaProvisoria: string;
 }
 
-export async function adminResetPassword({
-  funcionarioId,
-  novaSenhaProvisoria,
-}: ResetPasswordData) {
-  const response = await api.patch(
-    "/users/admin-reset-password",
-    {
-      funcionarioId,
-      novaSenhaProvisoria,
-    }
-  );
-
-  return response.data;
-}
-
-interface UpdatePasswordData {
+export interface UpdatePasswordData {
   senhaAntiga: string;
   novaSenha: string;
+}
+
+export async function registerNewUser(
+  data: RegisterUserData
+): Promise<User> {
+  const { data: response } = await api.post<User>(
+    "/register",
+    data
+  );
+
+  return response;
+}
+
+export async function adminResetPassword(
+  data: ResetPasswordData
+): Promise<void> {
+  await api.patch(
+    "/users/admin-reset-password",
+    data
+  );
 }
 
 export async function updateOwnPassword(
   data: UpdatePasswordData
 ): Promise<void> {
-  await api.put("/users/update-password", data);
+  await api.put(
+    "/users/update-password",
+    data
+  );
 }
 
 export async function toggleUserStatus(
   id: string
 ): Promise<void> {
-  await api.patch(`/users/${id}/toggle-status`);
+  await api.patch(
+    `/users/${id}/toggle-status`
+  );
 }

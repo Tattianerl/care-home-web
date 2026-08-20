@@ -6,14 +6,14 @@ import { AppointmentFilters } from "../../components/appointments/AppointmentFil
 import { AppointmentTable } from "../../components/appointments/AppointmentTable";
 import { Button } from "../../components/ui/Button";
 
-import { AppointmentStatus } from "../../constants/appointmentStatus";
-
 import {
   getAppointments,
   updateAppointmentStatus,
 } from "../../services/appointments";
 
 import type { Appointment } from "../../types/appointment";
+import { AppointmentStatus } from "../../types/enums";
+
 
 export function Appointments() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -21,7 +21,7 @@ export function Appointments() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState<AppointmentStatus | "">("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
@@ -84,20 +84,20 @@ export function Appointments() {
   }
 
   function handleFinish(id: string) {
-    return changeAppointmentStatus(
-      id,
-      AppointmentStatus.REALIZADO,
-      "Deseja marcar este agendamento como realizado?"
-    );
-  }
+  return changeAppointmentStatus(
+    id,
+    AppointmentStatus.REALIZADO,
+    "Deseja marcar este agendamento como realizado?"
+  );
+}
 
-  function handleCancel(id: string) {
-    return changeAppointmentStatus(
-      id,
-      AppointmentStatus.CANCELADO,
-      "Deseja cancelar este agendamento?"
-    );
-  }
+ function handleCancel(id: string) {
+  return changeAppointmentStatus(
+    id,
+    AppointmentStatus.CANCELADO,
+    "Deseja cancelar este agendamento?"
+  );
+}
 
   function clearFilters() {
     setSearch("");
@@ -114,7 +114,7 @@ export function Appointments() {
     return appointments.filter(
       (appointment) =>
         appointment.titulo.toLowerCase().includes(term) ||
-        appointment.patient.nome.toLowerCase().includes(term)
+        appointment.patient?.nome.toLowerCase().includes(term)
     );
   }, [appointments, search]);
 

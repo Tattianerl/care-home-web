@@ -1,6 +1,7 @@
 import { api } from "./api";
 
 import type {
+  Evolution,
   EvolutionListResponse,
   PatientEvolutionResponse,
 } from "../types/evolution";
@@ -13,47 +14,50 @@ export interface EvolutionFiltersParams {
   endDate?: string;
 }
 
+export interface CreateEvolutionInput {
+  descricao: string;
+  assinatura?: string;
+  patientId: string;
+}
+
+export interface UpdateEvolutionInput {
+  descricao: string;
+  assinatura?: string;
+}
+
 export async function getPatientEvolutions(
   patientId: string
 ): Promise<PatientEvolutionResponse> {
-  const response = await api.get(
+  const { data } = await api.get<PatientEvolutionResponse>(
     `/patients/${patientId}/evolutions`
   );
 
-  return response.data;
+  return data;
 }
 
 export async function getEvolutions(
   params?: EvolutionFiltersParams
 ): Promise<EvolutionListResponse> {
-  const response = await api.get("/evolutions", {
+  const { data } = await api.get<EvolutionListResponse>("/evolutions", {
     params,
   });
 
-  return response.data;
+  return data;
 }
 
-export async function createEvolution(data: {
-  descricao: string;
-  assinatura?: string;
-  patientId: string;
-}) {
-  const response = await api.post(
-    "/evolutions",
-    data
-  );
+export async function createEvolution(
+  data: CreateEvolutionInput
+): Promise<Evolution> {
+  const response = await api.post<Evolution>("/evolutions", data);
 
   return response.data;
 }
 
 export async function updateEvolution(
   id: string,
-  data: {
-    descricao: string;
-    assinatura?: string;
-  }
-) {
-  const response = await api.put(
+  data: UpdateEvolutionInput
+): Promise<Evolution> {
+  const response = await api.put<Evolution>(
     `/evolutions/${id}`,
     data
   );
@@ -61,10 +65,6 @@ export async function updateEvolution(
   return response.data;
 }
 
-export async function deleteEvolution(id: string) {
-  const response = await api.delete(
-    `/evolutions/${id}`
-  );
-
-  return response.data;
+export async function deleteEvolution(id: string): Promise<void> {
+  await api.delete(`/evolutions/${id}`);
 }

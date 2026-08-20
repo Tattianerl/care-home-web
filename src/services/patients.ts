@@ -1,56 +1,87 @@
 import { api } from "./api";
 
-// 1. Tipagem para criação e edição de Pacientes
-export interface PatientData {
-  id?: string;
-  nome: string;
-  dataNascimento: string;
-  
-  // 🪪 Documentação e Acomodação
-  cpf?: string;
-  rg?: string;
-  cartaoSus?: string;
-  fotoUrl?: string;
-  quartoLeito?: string;
-  genero?: string;
+import type { Patient, PatientsResponse } from "../types/patient";
+import type { PatientDetails } from "../types/patientDetails";
 
-  // 👨‍👩‍👧 Responsável Legal
-  responsavel: string;
-  telefone: string;
-  responsavelCpf?: string;
-  responsavelGrauParentesco?: string;
-  responsavelEmail?: string;
-  responsavelEndereco?: string;
+export type PatientData = Omit<
+  Patient,
+  "id" | "createdAt" | "ativo"
+>;
 
-  // 🏥 Saúde e Emergência
-  tipoSanguineo?: string;
-  planoSaude?: string;
-  contatoEmergencia?: string;
-  grauDependencia?: string;
+/**
+ * Lista pacientes.
+ *
+ * A API retorna um objeto paginado:
+ *
+ * {
+ *   page,
+ *   limit,
+ *   total,
+ *   totalPages,
+ *   data: Patient[]
+ * }
+ */
+export async function getPatients(
+  page = 1,
+  limit = 10
+): Promise<PatientsResponse> {
+  const { data } = await api.get<PatientsResponse>("/patients", {
+    params: {
+      page,
+      limit,
+    },
+  });
 
-  // 🩺 Histórico Clínico e Nutricional
-  historicoMedico?: string;
-  medicamentos?: string;
-  alergias?: string;
-  diagnosticos?: string;
-  restricaoAlimentar?: string;
-  observacoes?: string;
+  return data;
 }
 
-// 2. Função para Buscar Pacientes
-export async function getPatients() {
-  const response = await api.get("/patients");
-  return response.data;
+/**
+ * Busca os detalhes completos de um paciente.
+ */
+export async function getPatient(
+  id: string
+): Promise<PatientDetails> {
+  const { data } = await api.get<PatientDetails>(
+    `/patients/${id}`
+  );
+
+  return data;
 }
 
-// 3. Função para Criar Paciente
-export async function createPatient(data: PatientData) {
-  const response = await api.post("/patients", data);
-  return response.data;
+/**
+ * Cria um novo paciente.
+ */
+export async function createPatient(
+  patient: PatientData
+): Promise<Patient> {
+  const { data } = await api.post<Patient>(
+    "/patients",
+    patient
+  );
+
+  return data;
 }
 
-// 4. Função para Atualizar Paciente (se precisar no futuro)
-export async function updatePatient(id: string, data: Partial<PatientData>) {
-  const response = await api.put(`/patients/${id}`, data);
-  return response.data;
+/**
+ * Atualiza os dados de um paciente.
+ */
+export async function updatePatient(
+  id: string,
+  patient: Partial<PatientData>
+): Promise<Patient> {
+  const { data } = await api.put<Patient>(
+    `/patients/${id}`,
+    patient
+  );
+
+  return data;
+}
+
+/**
+ * Exclui um paciente.
+ */
+export async function deletePatient(
+  id: string
+): Promise<void> {
+  await api.delete(`/patients/${id}`);
 }

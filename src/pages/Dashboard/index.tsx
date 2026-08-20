@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Activity,
+  Apple,
   CalendarDays,
   ChevronRight,
   ClipboardList,
@@ -61,14 +62,14 @@ export function Dashboard() {
         value: dashboard.pacientesAtivos,
         icon: <Users className="h-5 w-5 text-emerald-600" />,
         bgIcon: "bg-emerald-50",
-        path: "/patients", 
+        path: "/patients",
       },
       {
         title: "Profissionais Ativos",
         value: dashboard.profissionaisAtivos,
         icon: <UserRoundCheck className="h-5 w-5 text-blue-600" />,
         bgIcon: "bg-blue-50",
-        path: "/funcionarios", 
+        path: "/funcionarios",
       },
       {
         title: "Atendimentos Hoje",
@@ -89,14 +90,14 @@ export function Dashboard() {
         value: dashboard.evolucoesHoje,
         icon: <ClipboardList className="h-5 w-5 text-purple-600" />,
         bgIcon: "bg-purple-50",
-        path: "/evolutions", 
+        path: "/evolutions",
       },
       {
-        title: "Documentos Hoje",
-        value: dashboard.documentosHoje,
-        icon: <FileText className="h-5 w-5 text-sky-600" />,
-        bgIcon: "bg-sky-50",
-        path: "/documents",
+        title: "Avaliações Nutricionais",
+        value: dashboard.avaliacoesNutricionaisHoje,
+        icon: <Apple className="h-5 w-5 text-teal-600" />,
+        bgIcon: "bg-teal-50",
+        path: "/nutritional-assessments/today",
       },
       {
         title: "Sinais Vitais",
@@ -104,6 +105,13 @@ export function Dashboard() {
         icon: <HeartPulse className="h-5 w-5 text-rose-600" />,
         bgIcon: "bg-rose-50",
         path: "/vital-signs",
+      },
+      {
+        title: "Documentos Hoje",
+        value: dashboard.documentosHoje,
+        icon: <FileText className="h-5 w-5 text-sky-600" />,
+        bgIcon: "bg-sky-50",
+        path: "/documents",
       },
     ];
   }, [dashboard]);
@@ -147,7 +155,7 @@ export function Dashboard() {
         </div>
       </header>
 
-      {/* Grid de Cards KPIs com os Links corretos */}
+      {/* Grid de Cards KPIs */}
       <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {cards.map((card) => (
           <Link
@@ -174,17 +182,17 @@ export function Dashboard() {
         ))}
       </section>
 
-      {/* Seção Inferior: Listas Informativas com Links Diretos */}
+      {/* Seção Inferior: Listas Informativas */}
       <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Card Lista 1: Pacientes */}
-        <DashboardList title="Últimos Pacientes Cadastrados">
+        <DashboardList title="Últimos Residentes Cadastrados">
           {dashboard.ultimosPacientes.length === 0 ? (
-            <p className="py-4 text-center text-xs text-slate-400">Nenhum paciente recente.</p>
+            <p className="py-4 text-center text-xs text-slate-400">Nenhum residente recente.</p>
           ) : (
             dashboard.ultimosPacientes.map((patient) => (
               <DashboardItem key={patient.id}>
-                <Link 
-                  to={`/patients/${patient.id}`} 
+                <Link
+                  to={`/patients/${patient.id}`}
                   className="flex items-center justify-between py-1 group/item"
                 >
                   <span className="font-medium text-slate-800 transition-colors group-hover/item:text-emerald-600">
@@ -206,16 +214,16 @@ export function Dashboard() {
           ) : (
             dashboard.ultimasEvolucoes.map((evolution) => (
               <DashboardItem key={evolution.id}>
-                <Link 
-                  to={`/patients/${evolution.patient}/evolutions`} 
+                <Link
+                  to={`/patients/${evolution.patient}/evolutions`}
                   className="block space-y-1 py-1 group/item"
                 >
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-semibold text-slate-900 group-hover/item:text-emerald-600 transition-colors">
+                    <p className="text-xs font-semibold text-slate-900 transition-colors group-hover/item:text-emerald-600">
                       {evolution.patient.nome}
                     </p>
                   </div>
-                  <p className="line-clamp-2 text-xs text-slate-500 leading-relaxed">
+                  <p className="line-clamp-2 text-xs leading-relaxed text-slate-500">
                     {evolution.descricao}
                   </p>
                 </Link>
@@ -231,12 +239,12 @@ export function Dashboard() {
           ) : (
             dashboard.proximosAtendimentosDetalhados.map((appointment) => (
               <DashboardItem key={appointment.id}>
-                <Link 
-                  to="/appointments" 
+                <Link
+                  to="/appointments"
                   className="flex items-center justify-between py-1 group/item"
                 >
                   <div>
-                    <p className="text-xs font-semibold text-slate-900 group-hover/item:text-emerald-600 transition-colors">
+                    <p className="text-xs font-semibold text-slate-900 transition-colors group-hover/item:text-emerald-600">
                       {appointment.patient.nome}
                     </p>
                     <p className="text-[11px] text-slate-500">

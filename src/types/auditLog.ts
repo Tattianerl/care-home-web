@@ -1,19 +1,24 @@
+import type { User } from "./user";
+
 export interface AuditLog {
   id: string;
 
   acao: string;
+
   entidade: string;
+
   entidadeId: string;
+
+  ip?: string;
+
   descricao?: string;
 
   createdAt: string;
 
-  user: {
-    nome: string;
-    cargo: string;
-  };
-}
+  userId: string;
 
+  user: User;
+}
 export interface AuditResponse {
   page: number;
   limit: number;

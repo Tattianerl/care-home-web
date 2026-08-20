@@ -18,7 +18,7 @@ import {
   downloadDocument,
   getAllDocuments,
 } from "../../services/documents";
-import type { PatientDocument } from "../../types/document";
+import type { PatientDocument } from "../../types/patientDocument";
 
 export function Documents() {
   const [documents, setDocuments] = useState<PatientDocument[]>([]);
@@ -148,17 +148,16 @@ export function Documents() {
           </div>
         </div>
 
-       
+
       </header>
 
       {/* Banner de Feedback */}
       {mensagem && (
         <div
-          className={`flex items-start gap-3 rounded-xl border p-4 text-xs font-medium ${
-            mensagem.tipo === "sucesso"
-              ? "border-emerald-200 bg-emerald-50/70 text-emerald-800"
-              : "border-rose-200 bg-rose-50/70 text-rose-800"
-          }`}
+          className={`flex items-start gap-3 rounded-xl border p-4 text-xs font-medium ${mensagem.tipo === "sucesso"
+            ? "border-emerald-200 bg-emerald-50/70 text-emerald-800"
+            : "border-rose-200 bg-rose-50/70 text-rose-800"
+            }`}
         >
           {mensagem.tipo === "sucesso" ? (
             <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 mt-0.5" />
@@ -236,9 +235,9 @@ export function Documents() {
                           <span>
                             {doc.createdAt
                               ? new Date(doc.createdAt).toLocaleString("pt-BR", {
-                                  dateStyle: "short",
-                                  timeStyle: "short",
-                                })
+                                dateStyle: "short",
+                                timeStyle: "short",
+                              })
                               : "Data não informada"}
                           </span>
                         </div>

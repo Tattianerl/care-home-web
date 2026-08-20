@@ -1,6 +1,6 @@
 import { Pencil, Check, X } from "lucide-react";
 
-import { AppointmentStatus } from "../../constants/appointmentStatus";
+import { AppointmentStatus } from "../../types/enums";
 
 interface Props {
   status: string;

@@ -13,9 +13,7 @@ export function Sidebar() {
 
   // Filtra apenas os itens permitidos para o cargo do usuário
   const visibleMenu = cargo
-    ? menuItems.filter((item) => item.roles.includes(cargo))
-    : [];
-
+    ? menuItems.filter((item) => item.roles.includes(cargo)):[];
   function renderMenu(items: MenuItem[]) {
     return items.map((item) => {
       const Icon = item.icon;

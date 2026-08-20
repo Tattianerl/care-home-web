@@ -1,12 +1,6 @@
-import type { Role } from "../permissions/roles";
+import type { User } from "./user";
 
-export interface User {
-  id: string;
-  nome: string;
-  email: string;
-  cargo: Role;
-  assinatura?: string | null;
-}
+export type { User } from "./user";
 
 export interface LoginResponse {
   user: User;

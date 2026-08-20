@@ -1,15 +1,15 @@
 import { Search, RotateCcw } from "lucide-react";
 
-import { AppointmentStatus } from "../../constants/appointmentStatus";
+import { AppointmentStatus } from "../../types/enums";
 
 interface Props {
   search: string;
-  status: string;
+  status: AppointmentStatus | "";
   startDate: string;
   endDate: string;
 
   onSearchChange(value: string): void;
-  onStatusChange(value: string): void;
+  onStatusChange(value: AppointmentStatus | ""): void;
   onStartDateChange(value: string): void;
   onEndDateChange(value: string): void;
   onClear(): void;
@@ -48,7 +48,7 @@ export function AppointmentFilters({
         {/* Status */}
         <select
           value={status}
-          onChange={(e) => onStatusChange(e.target.value)}
+          onChange={(e) => onStatusChange(e.target.value as AppointmentStatus | "")}
           className="rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="">Todos os status</option>

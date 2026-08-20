@@ -1,112 +1,86 @@
-import {
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-
-import {
-  FileText,
-  Loader2,
-} from "lucide-react";
-
-import {
-  Link,
-  useParams,
-} from "react-router-dom";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import { FileText, Loader2, ArrowLeft, Plus } from "lucide-react";
+import { Link, useParams, useNavigate } from "react-router-dom";
 
 import {
   deleteEvolution,
   getPatientEvolutions,
 } from "../../services/evolutions";
+import { api } from "../../services/api";
 
-import type {
-  Evolution,
-} from "../../types/evolution";
+import type { Evolution } from "../../types/evolution";
 
 import { EvolutionCard } from "../../components/evolutions/EvolutionCard";
 import { EvolutionFilters } from "../../components/evolutions/EvolutionFilters";
 import { EmptyEvolution } from "../../components/evolutions/EmptyEvolution";
 
+interface Professional {
+  id: string;
+  nome: string;
+}
+
 export function PatientEvolutions() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
   const [patientName, setPatientName] = useState("");
-
   const [evolutions, setEvolutions] = useState<Evolution[]>([]);
+  const [professionalsList, setProfessionalsList] = useState<Professional[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Estados dos Filtros
   const [search, setSearch] = useState("");
   const [professional, setProfessional] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  async function loadEvolutions(patientId: string) {
-    const response =
-      await getPatientEvolutions(patientId);
-
-    setPatientName(response.patient.nome);
-    setEvolutions(response.evolutions);
-  }
-
-  useEffect(() => {
+  const loadData = useCallback(async () => {
     if (!id) return;
-
-    const patientId = id;
-
-    let cancelled = false;
-
-    async function load() {
-      try {
-        setLoading(true);
-
-        const response =
-          await getPatientEvolutions(patientId);
-
-        if (cancelled) return;
-
-        setPatientName(response.patient.nome);
-        setEvolutions(response.evolutions);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }
-
-    void load();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [id]);
-
-  async function refresh() {
-    if (!id) return;
-
-    const patientId = id;
 
     try {
-      await loadEvolutions(patientId);
+      setLoading(true);
+
+      // Busca paralela: Evoluções do Paciente + Lista de Usuários/Profissionais
+      const [patientRes, usersRes] = await Promise.all([
+        getPatientEvolutions(id),
+        api.get("/users").catch(() => ({ data: [] })), // Tratamento seguro caso a rota falhe
+      ]);
+
+      setPatientName(patientRes.patient.nome);
+      setEvolutions(patientRes.evolutions || []);
+
+      // Se a API /users retornar dados, usa eles; se não, extrai das próprias evoluções
+      if (usersRes.data && usersRes.data.length > 0) {
+        setProfessionalsList(usersRes.data);
+      } else {
+        const map = new Map<string, Professional>();
+        (patientRes.evolutions || []).forEach((item) => {
+          if (!map.has(item.user.id)) {
+            map.set(item.user.id, { id: item.user.id, nome: item.user.nome });
+          }
+        });
+        setProfessionalsList(Array.from(map.values()));
+      }
     } catch (error) {
-      console.error(error);
+      console.error("Erro ao carregar dados das evoluções do residente:", error);
+    } finally {
+      setLoading(false);
     }
-  }
+  }, [id]);
+
+  useEffect(() => {
+    void loadData();
+  }, [loadData]);
 
   async function handleDelete(evolutionId: string) {
-    const confirmed = window.confirm(
-      "Deseja excluir esta evolução?"
-    );
-
+    const confirmed = window.confirm("Deseja excluir esta evolução?");
     if (!confirmed) return;
 
     try {
       await deleteEvolution(evolutionId);
-
-      await refresh();
+      await loadData();
     } catch (error) {
-      console.error(error);
+      console.error("Erro ao excluir evolução:", error);
     }
   }
 
@@ -117,90 +91,77 @@ export function PatientEvolutions() {
     setEndDate("");
   }
 
-  const filtered = useMemo(() => {
+  // Filtragem completa e em tempo real dos cards de evolução
+  const filteredEvolutions = useMemo(() => {
     return evolutions.filter((item) => {
-      const searchMatch =
-        item.descricao
-          .toLowerCase()
-          .includes(search.toLowerCase()) ||
-        item.user.nome
-          .toLowerCase()
-          .includes(search.toLowerCase());
+      // 1. Busca textual (Paciente, Descrição ou Profissional)
+      const term = search.toLowerCase();
+      const matchesSearch =
+        !term ||
+        item.patient.nome.toLowerCase().includes(term) ||
+        item.descricao.toLowerCase().includes(term) ||
+        item.user.nome.toLowerCase().includes(term);
 
-      const professionalMatch =
-        !professional ||
-        item.user.nome
-          .toLowerCase()
-          .includes(professional.toLowerCase());
+      // 2. Filtro por Profissional
+      const matchesProfessional =
+        !professional || item.user.id === professional;
 
-      const created =
-        new Date(item.createdAt);
+      // 3. Filtro por Período de Datas
+      const itemDate = new Date(item.createdAt).getTime();
+      const start = startDate ? new Date(`${startDate}T00:00:00`).getTime() : null;
+      const end = endDate ? new Date(`${endDate}T23:59:59`).getTime() : null;
 
-      const startMatch =
-        !startDate ||
-        created >= new Date(startDate);
-
-      const endMatch =
-        !endDate ||
-        created <=
-          new Date(`${endDate}T23:59:59`);
+      const matchesStartDate = !start || itemDate >= start;
+      const matchesEndDate = !end || itemDate <= end;
 
       return (
-        searchMatch &&
-        professionalMatch &&
-        startMatch &&
-        endMatch
+        matchesSearch &&
+        matchesProfessional &&
+        matchesStartDate &&
+        matchesEndDate
       );
     });
-  }, [
-    evolutions,
-    search,
-    professional,
-    startDate,
-    endDate,
-  ]);
+  }, [evolutions, search, professional, startDate, endDate]);
 
   return (
-    <div className="space-y-6">
-
-      <div className="flex items-center justify-between">
-
-        <div>
-
-          <h1 className="flex items-center gap-2 text-3xl font-bold">
-            <FileText className="text-emerald-600" />
-            Evoluções do Residente
-          </h1>
-
-          <p className="mt-1 text-slate-500">
-            {patientName}
-          </p>
-
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      {/* Cabeçalho com navegação e ação */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate(-1)}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
+            title="Voltar"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+              <FileText className="text-purple-600" />
+              Evoluções do Residente
+            </h1>
+            <p className="text-sm text-gray-500">
+              {patientName ? `Residente: ${patientName}` : "Carregando paciente..."}
+            </p>
+          </div>
         </div>
 
         <Link
           to={`/patients/${id}/evolutions/new`}
-          className="
-            rounded-xl
-            bg-emerald-600
-            px-4
-            py-2
-            text-sm
-            font-semibold
-            text-white
-            hover:bg-emerald-700
-          "
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-purple-700 transition-colors shadow-sm"
         >
+          <Plus size={18} />
           Nova Evolução
         </Link>
-
       </div>
 
+      {/* Barra de Filtros Refinada */}
       <EvolutionFilters
         search={search}
         professional={professional}
         startDate={startDate}
         endDate={endDate}
+        professionalsList={professionalsList}
         onSearchChange={setSearch}
         onProfessionalChange={setProfessional}
         onStartDateChange={setStartDate}
@@ -208,16 +169,25 @@ export function PatientEvolutions() {
         onClear={clearFilters}
       />
 
+      {/* Conteúdo da Lista */}
       {loading ? (
-        <div className="flex justify-center py-10">
-          <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
+        <div className="flex justify-center py-12">
+          <div className="flex items-center gap-3 text-sm text-gray-500">
+            <Loader2 className="h-5 w-5 animate-spin text-purple-600" />
+            Carregando evoluções...
+          </div>
         </div>
-      ) : filtered.length === 0 ? (
-        <EmptyEvolution />
+      ) : filteredEvolutions.length === 0 ? (
+        <div className="bg-white rounded-xl p-8 text-center border border-gray-100 text-gray-500">
+          {evolutions.length === 0 ? (
+            <EmptyEvolution />
+          ) : (
+            "Nenhuma evolução encontrada com os filtros selecionados."
+          )}
+        </div>
       ) : (
         <div className="space-y-4">
-
-          {filtered.map((evolution) => (
+          {filteredEvolutions.map((evolution) => (
             <EvolutionCard
               key={evolution.id}
               evolution={evolution}
@@ -225,10 +195,8 @@ export function PatientEvolutions() {
               onDelete={handleDelete}
             />
           ))}
-
         </div>
       )}
-
     </div>
   );
 }

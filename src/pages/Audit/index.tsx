@@ -15,7 +15,7 @@ import {
   exportAuditLogs,
 } from "../../services/audit";
 
-import type { AuditLog, AuditSummary } from "../../types/audit";
+import type { AuditLog, AuditSummary } from "../../types/auditLog";
 
 import { AuditCards } from "../../components/audit/AuditCards";
 import { AuditFilters } from "../../components/audit/AuditFilters";
@@ -171,11 +171,10 @@ export function Audit() {
       {/* Banner de Mensagens e Alertas */}
       {mensagem && (
         <div
-          className={`flex items-start gap-3 rounded-xl border p-4 text-xs font-medium ${
-            mensagem.tipo === "sucesso"
+          className={`flex items-start gap-3 rounded-xl border p-4 text-xs font-medium ${mensagem.tipo === "sucesso"
               ? "border-emerald-200 bg-emerald-50/70 text-emerald-800"
               : "border-rose-200 bg-rose-50/70 text-rose-800"
-          }`}
+            }`}
         >
           {mensagem.tipo === "sucesso" ? (
             <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 mt-0.5" />

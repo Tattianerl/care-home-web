@@ -124,8 +124,7 @@ export function Evolutions() {
         onProfessionalChange={setProfessional}
         onStartDateChange={setStartDate}
         onEndDateChange={setEndDate}
-        onClear={clearFilters}
-      />
+        onClear={clearFilters} professionalsList={[]}      />
 
       {loading ? (
         <div className="flex justify-center py-10">

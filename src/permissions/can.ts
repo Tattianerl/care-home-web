@@ -1,17 +1,11 @@
-import {
-  rolePermissions,
-  type Permission,
-} from "./permissions";
+import type { Permission } from "./permissions";
+import { rolePermissions } from "./permissions";
 
-import type { Role } from "./roles";
-
+import type { UserRole } from "../types/enums";
 
 export function can(
-  role: Role,
+  role: UserRole,
   permission: Permission
 ) {
-
-  return rolePermissions[role]
-    .includes(permission);
-
+  return rolePermissions[role]?.includes(permission) ?? false;
 }

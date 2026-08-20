@@ -1,9 +1,8 @@
-import { AppointmentStatus } from "../../constants/appointmentStatus";
-import type { AppointmentStatusType } from "../../constants/appointmentStatus";
+import { AppointmentStatus } from "../../types/enums";
 
 
 interface Props {
-  status: AppointmentStatusType;
+  status: AppointmentStatus;
 }
 
 
