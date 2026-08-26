@@ -8,7 +8,7 @@ import { Dashboard } from "../pages/Dashboard";
 import { Patients } from "../pages/Patients";
 import { PatientDetails } from "../pages/PatientDetails";
 import { NotFound } from "../pages/NotFound";
-
+import { PatientMedications } from "../pages/PatientMedications";
 
 import { Appointments } from "../pages/Appointments"; 
 import { CreateAppointment } from "../pages/CreateAppointment";
@@ -35,6 +35,8 @@ import { VitalSignsOverview } from "../pages/VitalSignsOverview";
 import { EditPatient } from "../pages/EditPatient";
 import { PatientNutritionHistory } from "../pages/PatientNutritionHistory";
 import { TodayNutritionalAssessments } from "../pages/TodayNutritionalAssessments";
+import { CreateMedication } from "../pages/CreateMedication";
+import { EditMedication } from "../pages/EditMedication";
 
 export function AppRoutes() {
   return (
@@ -94,8 +96,19 @@ export function AppRoutes() {
           element={<EditEvolution />}
         />
         {/* Medicação */}
-
-
+        <Route
+          path="/patients/:id/medications"
+          element={<PatientMedications />}
+        />
+        <Route
+          path="/patients/:id/medications/new"
+          element={<CreateMedication />}
+        />
+          <Route
+            path="/medications/:id/edit"
+            element={<EditMedication />}
+          />
+          
         {/* Timeline */}
         <Route
           path="/patients/:id/timeline"

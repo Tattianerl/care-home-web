@@ -23,6 +23,7 @@ import {
   HeartPulse,
   BedDouble,
   ShieldCheck,
+  Pill,
 } from "lucide-react";
 
 import { getPatient } from "../../services/patients";
@@ -710,13 +711,12 @@ export function PatientDetails() {
             </span>
 
             <span
-              className={`mt-1 inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase ${
-                patient.falecido
+              className={`mt-1 inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase ${patient.falecido
                   ? "bg-slate-100 text-slate-600"
                   : patient.ativo
                     ? "bg-emerald-50 text-emerald-700"
                     : "bg-amber-50 text-amber-700"
-              }`}
+                }`}
             >
               {patient.falecido
                 ? "Falecido"
@@ -836,11 +836,11 @@ export function PatientDetails() {
               value={
                 latestVital.pressaoSistolica !==
                   null &&
-                latestVital.pressaoSistolica !==
+                  latestVital.pressaoSistolica !==
                   undefined &&
-                latestVital.pressaoDiastolica !==
+                  latestVital.pressaoDiastolica !==
                   null &&
-                latestVital.pressaoDiastolica !==
+                  latestVital.pressaoDiastolica !==
                   undefined
                   ? `${latestVital.pressaoSistolica}/${latestVital.pressaoDiastolica}`
                   : "--"
@@ -899,6 +899,14 @@ export function PatientDetails() {
         )}
       </section>
 
+      <Link
+        to={`/patients/${patient.id}/medications`}
+        className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-xs transition-all hover:bg-slate-50"
+      >
+        <Pill className="h-4 w-4 text-emerald-600" />
+        <span>Medicamentos</span>
+      </Link>
+
       {/* NUTRIÇÃO */}
       <section className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
         <div className="flex flex-col gap-2 border-b border-slate-100 pb-3 sm:flex-row sm:items-center sm:justify-between">
@@ -947,18 +955,18 @@ export function PatientDetails() {
               label="IMC"
               value={
                 latestNutrition.imc !== null &&
-                latestNutrition.imc !== undefined
+                  latestNutrition.imc !== undefined
                   ? Number(
-                      latestNutrition.imc
-                    ).toFixed(1)
+                    latestNutrition.imc
+                  ).toFixed(1)
                   : "--"
               }
               secondary={
                 latestNutrition.imc !== null &&
-                latestNutrition.imc !== undefined
+                  latestNutrition.imc !== undefined
                   ? getImcClassification(
-                      latestNutrition.imc
-                    )
+                    latestNutrition.imc
+                  )
                   : undefined
               }
             />
@@ -1007,7 +1015,7 @@ export function PatientDetails() {
         </div>
 
         {!patient.evolutions ||
-        patient.evolutions.length === 0 ? (
+          patient.evolutions.length === 0 ? (
           <p className="py-2 text-xs italic text-slate-400">
             Nenhuma evolução registrada recentemente.
           </p>

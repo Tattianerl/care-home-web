@@ -3,40 +3,22 @@ import { api } from "./api";
 import type { MedicationStatus } from "../types/enums";
 import type { Medication } from "../types/medication";
 
-export interface MedicationFiltersParams {
-  patientId?: string;
-  status?: MedicationStatus;
-  search?: string;
-}
-
 export interface CreateMedicationInput {
   nome: string;
   dosagem: string;
   frequencia: string;
   viaAdministracao: string;
-  horarios?: unknown;
-  inicioTratamento?: string;
-  fimTratamento?: string;
+  horarios?: string[] | null;
+  inicioTratamento?: string | null;
+  fimTratamento?: string | null;
   status?: MedicationStatus;
   controlado?: boolean;
   usoContinuo?: boolean;
-  observacoes?: string;
-  patientId: string;
-  prescritoPorId?: string;
+  observacoes?: string | null;
+  prescritoPorId?: string | null;
 }
 
-export type UpdateMedicationInput =
-  Partial<CreateMedicationInput>;
-
-export async function getMedications(
-  params?: MedicationFiltersParams
-): Promise<Medication[]> {
-  const { data } = await api.get<Medication[]>("/medications", {
-    params,
-  });
-
-  return data;
-}
+export type UpdateMedicationInput = Partial<CreateMedicationInput>;
 
 export async function getPatientMedications(
   patientId: string
@@ -49,11 +31,22 @@ export async function getPatientMedications(
 }
 
 export async function createMedication(
+  patientId: string,
   data: CreateMedicationInput
 ): Promise<Medication> {
   const response = await api.post<Medication>(
-    "/medications",
+    `/patients/${patientId}/medications`,
     data
+  );
+
+  return response.data;
+}
+
+export async function getMedication(
+  id: string
+): Promise<Medication> {
+  const response = await api.get<Medication>(
+    `/medications/${id}`
   );
 
   return response.data;
@@ -69,22 +62,4 @@ export async function updateMedication(
   );
 
   return response.data;
-}
-
-export async function updateMedicationStatus(
-  id: string,
-  status: MedicationStatus
-): Promise<Medication> {
-  const response = await api.patch<Medication>(
-    `/medications/${id}/status`,
-    { status }
-  );
-
-  return response.data;
-}
-
-export async function deleteMedication(
-  id: string
-): Promise<void> {
-  await api.delete(`/medications/${id}`);
 }

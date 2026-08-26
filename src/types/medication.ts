@@ -9,7 +9,7 @@ export interface Medication {
   frequencia: string;
   viaAdministracao: string;
 
-  horarios?: unknown | null;
+  horarios?: string[] | null;
 
   inicioTratamento?: string | null;
   fimTratamento?: string | null;
