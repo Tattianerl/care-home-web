@@ -44,7 +44,9 @@ export function CreateEvolution() {
     if (!id) return;
 
     if (!descricao.trim()) {
-      setErrorMessage("Por favor, descreva a evolução do residente antes de salvar.");
+      setErrorMessage(
+        "Por favor, descreva a evolução do residente antes de salvar."
+      );
       return;
     }
 
@@ -54,13 +56,9 @@ export function CreateEvolution() {
     try {
       setSaving(true);
 
-      const assinaturaProfissional =
-        currentUser.nome || "Profissional Responsável";
-
       await createEvolution({
         descricao,
         patientId: id,
-        assinatura: assinaturaProfissional,
       });
 
       setSuccessMessage("Evolução registrada com sucesso!");
@@ -85,14 +83,16 @@ export function CreateEvolution() {
         <div className="flex items-center gap-3">
           <Link
             to={`/patients/${id}/evolutions`}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-800"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
+
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">
               Nova Evolução
             </h1>
+
             <p className="text-xs font-medium text-slate-500">
               Registre a evolução diária, sinais vitais ou ocorrências do residente.
             </p>
@@ -117,20 +117,23 @@ export function CreateEvolution() {
 
       {/* FORMULÁRIO */}
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-5">
+        <div className="space-y-5 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
           {/* CARD DA ASSINATURA AUTOMÁTICA */}
-          <div className="flex items-center justify-between rounded-xl bg-slate-50 border border-slate-200/70 p-3.5 text-xs text-slate-600">
+          <div className="flex items-center justify-between rounded-xl border border-slate-200/70 bg-slate-50 p-3.5 text-xs text-slate-600">
             <div className="flex items-center gap-2.5">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
                 <UserCheck className="h-4 w-4" />
               </div>
+
               <div>
-                <span className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                   Assinatura do Registro
                 </span>
+
                 <span className="font-bold text-slate-800">
                   {currentUser.nome || "Usuário do Sistema"}
                 </span>
+
                 {(currentUser.cargo || currentUser.funcao) && (
                   <span className="ml-1.5 text-slate-500">
                     ({currentUser.cargo || currentUser.funcao})
@@ -138,7 +141,8 @@ export function CreateEvolution() {
                 )}
               </div>
             </div>
-            <PenTool className="h-4 w-4 text-slate-400 shrink-0" />
+
+            <PenTool className="h-4 w-4 shrink-0 text-slate-400" />
           </div>
 
           {/* CAMPO DE TEXTO */}
@@ -146,13 +150,14 @@ export function CreateEvolution() {
             <label className="block text-xs font-semibold text-slate-700">
               Descrição Detalhada da Evolução *
             </label>
+
             <textarea
               required
               rows={8}
               value={descricao}
               onChange={(e) => setDescricao(e.target.value)}
               placeholder="Descreva o estado do paciente, horários de medicações, alimentação, comportamento ou qualquer intercorrência relevante..."
-              className="w-full rounded-xl border border-slate-200 bg-white p-3.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all resize-y"
+              className="w-full resize-y rounded-xl border border-slate-200 bg-white p-3.5 text-sm text-slate-800 placeholder:text-slate-400 transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
             />
           </div>
         </div>
