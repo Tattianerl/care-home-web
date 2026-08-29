@@ -81,8 +81,8 @@ export function Dashboard() {
       {
         title: "Próximos Atendimentos",
         value: dashboard.proximosAtendimentos,
-        icon: <Activity className="h-5 w-5 text-amber-600" />,
-        bgIcon: "bg-amber-50",
+        icon: <Activity className="h-5 w-5 text-emerald-600" />,
+        bgIcon: "bg-emerald-50",
         path: "/appointments",
       },
       {
@@ -268,3 +268,7 @@ export function Dashboard() {
     </div>
   );
 }
+
+
+
+

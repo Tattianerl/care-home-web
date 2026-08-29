@@ -140,7 +140,7 @@ export function EvolutionsToday() {
           </button>
           <div>
             <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-              <FileText className="text-purple-600" />
+              <FileText className="text-emerald-600" />
               {isCustomPeriod ? "Evoluções Registradas" : "Evoluções de Hoje"}
             </h1>
             <p className="text-sm text-gray-500">
@@ -170,7 +170,7 @@ export function EvolutionsToday() {
       {loading ? (
         <div className="flex justify-center py-12">
           <div className="flex items-center gap-3 text-sm text-gray-500">
-            <Loader2 className="h-5 w-5 animate-spin text-purple-600" />
+            <Loader2 className="h-5 w-5 animate-spin th-5 w-5 text-emerald-600" />
             Carregando evoluções...
           </div>
         </div>

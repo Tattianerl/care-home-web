@@ -1,4 +1,3 @@
-
 import { Search, RotateCcw } from "lucide-react";
 
 interface Professional {
@@ -39,13 +38,14 @@ export function EvolutionFilters({
     <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm space-y-3 lg:space-y-0 lg:flex lg:items-center lg:gap-3 flex-wrap">
       {/* Campo de Busca por Texto */}
       <div className="relative flex-1 min-w-[240px]">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-600 h-4 w-4" />
+
         <input
           type="text"
           placeholder="Buscar por paciente, descrição..."
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+          className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
         />
       </div>
 
@@ -54,9 +54,10 @@ export function EvolutionFilters({
         <select
           value={professional}
           onChange={(e) => onProfessionalChange(e.target.value)}
-          className="w-full py-2 px-3 border border-gray-200 rounded-lg text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+          className="w-full py-2 px-3 border border-gray-200 rounded-lg text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
         >
           <option value="">Todos os profissionais</option>
+
           {professionalsList.map((prof) => (
             <option key={prof.id} value={prof.id}>
               {prof.nome}
@@ -73,17 +74,21 @@ export function EvolutionFilters({
             title="Data Início"
             value={startDate}
             onChange={(e) => onStartDateChange(e.target.value)}
-            className="w-full py-2 px-3 border border-gray-200 rounded-lg text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full py-2 px-3 border border-gray-200 rounded-lg text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
         </div>
-        <span className="text-gray-400 text-xs font-medium">até</span>
+
+        <span className="text-gray-400 text-xs font-medium">
+          até
+        </span>
+
         <div className="relative flex-1 sm:w-36">
           <input
             type="date"
             title="Data Fim"
             value={endDate}
             onChange={(e) => onEndDateChange(e.target.value)}
-            className="w-full py-2 px-3 border border-gray-200 rounded-lg text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full py-2 px-3 border border-gray-200 rounded-lg text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
         </div>
       </div>

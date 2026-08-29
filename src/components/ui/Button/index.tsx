@@ -24,7 +24,7 @@ export function Button({
       "bg-gray-200 hover:bg-gray-300 text-gray-800",
 
     success:
-      "bg-green-600 hover:bg-green-700 text-white",
+      "bg-emerald-600 hover:bg-emerald-500 text-white",
 
     danger:
       "bg-red-600 hover:bg-red-700 text-white",
