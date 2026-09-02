@@ -10,6 +10,7 @@ import {
   ClipboardList,
   PenTool,
   Activity,
+  Apple,
 } from "lucide-react";
 
 import { Roles } from "../../permissions/roles";
@@ -61,6 +62,18 @@ export const menuItems: MenuItem[] = [
       Roles.NUTRICIONISTA,
       Roles.ASSISTENTE_SOCIAL,
   ],
+  },
+  {
+    title: "Nutrição", 
+    path: "/nutritional-assessments/today", 
+    icon: Apple,
+    group: "Atendimento",
+    roles: [
+      Roles.ADMIN,
+      Roles.NUTRICIONISTA,
+      Roles.ENFERMEIRO,
+      Roles.MEDICO,
+    ],
   },
   {
     title: "Sinais Vitais",

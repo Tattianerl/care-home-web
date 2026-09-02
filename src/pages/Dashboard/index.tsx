@@ -10,6 +10,7 @@ import {
   HeartPulse,
   UserRoundCheck,
   Users,
+  AlertTriangle,
 } from "lucide-react";
 
 import { useAuth } from "../../context/useAuth";
@@ -76,14 +77,14 @@ export function Dashboard() {
         value: dashboard.atendimentosHoje,
         icon: <CalendarDays className="h-5 w-5 text-indigo-600" />,
         bgIcon: "bg-indigo-50",
-        path: "/appointments",
+        path: "/appointments?filtro=hoje",
       },
       {
         title: "Próximos Atendimentos",
         value: dashboard.proximosAtendimentos,
         icon: <Activity className="h-5 w-5 text-emerald-600" />,
         bgIcon: "bg-emerald-50",
-        path: "/appointments",
+        path: "/appointments?filtro=proximos",
       },
       {
         title: "Evoluções Hoje",
@@ -182,9 +183,9 @@ export function Dashboard() {
         ))}
       </section>
 
-      {/* Seção Inferior: Listas Informativas */}
+      {/* Seção Inferior: Listas Informativas e Painel de Alertas */}
       <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Card Lista 1: Pacientes */}
+        {/* Card Lista 1: Residentes */}
         <DashboardList title="Últimos Residentes Cadastrados">
           {dashboard.ultimosPacientes.length === 0 ? (
             <p className="py-4 text-center text-xs text-slate-400">Nenhum residente recente.</p>
@@ -215,13 +216,16 @@ export function Dashboard() {
             dashboard.ultimasEvolucoes.map((evolution) => (
               <DashboardItem key={evolution.id}>
                 <Link
-                  to={`/patients/${evolution.patient}/evolutions`}
+                  to={`/patients/${evolution.patient.id}/evolutions`}
                   className="block space-y-1 py-1 group/item"
                 >
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-semibold text-slate-900 transition-colors group-hover/item:text-emerald-600">
                       {evolution.patient.nome}
                     </p>
+                    <span className="text-[10px] text-slate-400">
+                      {evolution.user?.nome}
+                    </span>
                   </div>
                   <p className="line-clamp-2 text-xs leading-relaxed text-slate-500">
                     {evolution.descricao}
@@ -232,34 +236,32 @@ export function Dashboard() {
           )}
         </DashboardList>
 
-        {/* Card Lista 3: Próximos Atendimentos */}
-        <DashboardList title="Próximos Atendimentos">
-          {dashboard.proximosAtendimentosDetalhados.length === 0 ? (
-            <p className="py-4 text-center text-xs text-slate-400">Sem agendamentos próximos.</p>
+        {/* Card Lista 3: Pendências / Alertas do Dia (Substituiu a duplicação) */}
+        <DashboardList title="Pendências Operacionais de Hoje">
+          {dashboard.pendencias.length === 0 ? (
+            <div className="py-6 text-center">
+              <span className="inline-block rounded-full bg-emerald-50 p-2 text-emerald-600 mb-2">
+                <Users className="h-5 w-5" />
+              </span>
+              <p className="text-xs font-medium text-slate-600">Tudo em dia por aqui!</p>
+              <p className="text-[11px] text-slate-400 mt-0.5">Nenhuma pendência crítica registrada para hoje.</p>
+            </div>
           ) : (
-            dashboard.proximosAtendimentosDetalhados.map((appointment) => (
-              <DashboardItem key={appointment.id}>
-                <Link
-                  to="/appointments"
-                  className="flex items-center justify-between py-1 group/item"
-                >
-                  <div>
-                    <p className="text-xs font-semibold text-slate-900 transition-colors group-hover/item:text-emerald-600">
-                      {appointment.patient.nome}
-                    </p>
-                    <p className="text-[11px] text-slate-500">
-                      {new Date(appointment.dataHora).toLocaleString("pt-BR", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
+            dashboard.pendencias.map((pendencia, index) => (
+              <DashboardItem key={index}>
+                <div className="flex items-center justify-between py-1">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
+                    <span className="text-xs font-medium text-slate-700">
+                      {pendencia.mensagem}
+                    </span>
                   </div>
-                  <span className="rounded-md bg-indigo-50 px-2 py-1 text-[10px] font-medium text-indigo-700">
-                    Agendado
+                  <span className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${
+                    pendencia.tipo === "EVOLUTION" ? "bg-purple-50 text-purple-700" : "bg-rose-50 text-rose-700"
+                  }`}>
+                    {pendencia.tipo === "EVOLUTION" ? "Evolução" : "Sinais"}
                   </span>
-                </Link>
+                </div>
               </DashboardItem>
             ))
           )}
@@ -268,7 +270,3 @@ export function Dashboard() {
     </div>
   );
 }
-
-
-
-

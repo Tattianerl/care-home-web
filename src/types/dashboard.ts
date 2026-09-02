@@ -11,6 +11,7 @@ export interface DashboardEvolution {
   createdAt: string;
 
   patient: {
+    id: string;
     nome: string;
   };
 

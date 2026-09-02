@@ -36,9 +36,10 @@ export function Login() {
 
   return (
     <div className="fixed inset-0 w-screen h-screen flex items-center justify-center bg-slate-100 p-4 overflow-hidden">
-      <div className="w-full max-w-md space-y-2">
+      <div className="w-full max-w-md space-y-3">
         <div className="flex justify-center">
-          <Logo className="max-w-[200px] md:max-w-[220px] h-auto" />
+          {/* Logo com tamanho reduzido para ficar mais elegante */}
+          <Logo className="max-w-[140px] md:max-w-[160px] h-auto" />
         </div>
 
         <form

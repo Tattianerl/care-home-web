@@ -43,13 +43,12 @@ export function PatientEvolutions() {
       // Busca paralela: Evoluções do Paciente + Lista de Usuários/Profissionais
       const [patientRes, usersRes] = await Promise.all([
         getPatientEvolutions(id),
-        api.get("/users").catch(() => ({ data: [] })), // Tratamento seguro caso a rota falhe
+        api.get("/users").catch(() => ({ data: [] })),
       ]);
 
       setPatientName(patientRes.patient.nome);
       setEvolutions(patientRes.evolutions || []);
 
-      // Se a API /users retornar dados, usa eles; se não, extrai das próprias evoluções
       if (usersRes.data && usersRes.data.length > 0) {
         setProfessionalsList(usersRes.data);
       } else {
@@ -137,6 +136,7 @@ export function PatientEvolutions() {
           </button>
           <div>
             <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+              {/* Ícone Roxo mantido para dar identidade ao módulo clínico/evoluções */}
               <FileText className="text-purple-600" />
               Evoluções do Residente
             </h1>
@@ -146,9 +146,10 @@ export function PatientEvolutions() {
           </div>
         </div>
 
+        {/* Botão principal de ação mantido em Emerald para consistência de fluxo */}
         <Link
           to={`/patients/${id}/evolutions/new`}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-purple-700 transition-colors shadow-sm"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors shadow-sm"
         >
           <Plus size={18} />
           Nova Evolução
