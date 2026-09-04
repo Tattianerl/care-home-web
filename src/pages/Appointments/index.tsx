@@ -12,9 +12,20 @@ import {
 } from "../../services/appointments";
 
 import type { Appointment } from "../../types/appointment";
-import { AppointmentStatus } from "../../types/enums";
+import { AppointmentStatus} from "../../types/enums";
+
+import { useAuth } from "../../context/useAuth";
+import { Roles } from "../../permissions/roles";
 
 export function Appointments() {
+
+  const { user } = useAuth();
+  
+  
+ const canManageAppointments = user
+    ? ([Roles.ADMIN, Roles.COORDENADOR, Roles.RECEPCAO] as string[]).includes(user.cargo)
+    : false;
+
   // Lê os parâmetros da URL (ex: ?filtro=hoje)
   const [searchParams] = useSearchParams();
   const filtro = searchParams.get("filtro");
@@ -177,12 +188,15 @@ export function Appointments() {
           </div>
         </div>
 
-        <Link to="/appointments/new">
-          <Button variant="success" className="w-full sm:w-auto">
-            <Plus className="h-4 w-4" />
-            <span>Novo Agendamento</span>
-          </Button>
-        </Link>
+        {/* 👇 Oculta o botão Novo Agendamento para quem não tem permissão */}
+        {canManageAppointments && (
+          <Link to="/appointments/new">
+            <Button variant="success" className="w-full sm:w-auto">
+              <Plus className="h-4 w-4" />
+              <span>Novo Agendamento</span>
+            </Button>
+          </Link>
+        )}
       </header>
 
       {/* FEEDBACK DE ERRO DE CARREGAMENTO */}
@@ -210,8 +224,10 @@ export function Appointments() {
       <AppointmentTable
         appointments={filteredAppointments}
         loading={loading}
-        onFinish={handleFinish}
-        onCancel={handleCancel}
+        // 👇 Só passa as funções de editar status se o usuário tiver permissão.
+        // O AppointmentTable precisará estar preparado para ocultar os botões se essas props forem undefined.
+        onFinish={canManageAppointments ? handleFinish : undefined}
+        onCancel={canManageAppointments ? handleCancel : undefined}
       />
 
       {/* ESTADO VAZIO (EMPTY STATE) */}
@@ -235,12 +251,15 @@ export function Appointments() {
                 Limpar Filtros
               </Button>
             )}
-            <Link to="/appointments/new">
-              <Button variant="success">
-                <Plus className="h-4 w-4" />
-                <span>Novo Agendamento</span>
-              </Button>
-            </Link>
+            {/* 👇 Oculta botão vazio também */}
+            {canManageAppointments && !hasActiveFilters && (
+              <Link to="/appointments/new">
+                <Button variant="success">
+                  <Plus className="h-4 w-4" />
+                  <span>Novo Agendamento</span>
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       )}

@@ -9,9 +9,9 @@ import { AppointmentStatusBadge } from "./AppointmentStatusBadge";
 
 interface Props {
   appointment: Appointment;
-  onEdit(): void;
-  onFinish(): void;
-  onCancel(): void;
+  onEdit?(): void;
+  onFinish?(): void;
+  onCancel?(): void;
 }
 
 export function AppointmentCard({
@@ -20,6 +20,9 @@ export function AppointmentCard({
   onFinish,
   onCancel,
 }: Props) {
+  // Verifica se o usuário tem permissão para gerenciar (se alguma das funções foi passada)
+  const canManage = Boolean(onEdit || onFinish || onCancel);
+
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
 
@@ -104,15 +107,17 @@ export function AppointmentCard({
         )}
       </div>
 
-      {/* Rodapé */}
-      <div className="mt-5 flex justify-end border-t pt-4">
-        <AppointmentActions
-          status={appointment.status}
-          onEdit={onEdit}
-          onFinish={onFinish}
-          onCancel={onCancel}
-        />
-      </div>
+      {/* Rodapé - Só exibe a barra de ações se o usuário tiver permissão */}
+      {canManage && (
+        <div className="mt-5 flex justify-end border-t pt-4">
+          <AppointmentActions
+            status={appointment.status}
+            onEdit={onEdit!}
+            onFinish={onFinish!}
+            onCancel={onCancel!}
+          />
+        </div>
+      )}
     </div>
   );
 }
