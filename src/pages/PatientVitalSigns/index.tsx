@@ -15,8 +15,18 @@ import { api } from "../../services/api";
 import type { VitalSign } from "../../types/vitalSigns";
 import { evaluateVitalStatus } from "../../types/vitalSigns";
 
+// 👇 Importando autenticação e roles
+import { useAuth } from "../../context/useAuth";
+import { Roles } from "../../permissions/roles";
+
 export function PatientVitalSigns() {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
+
+  // 👇 Apenas equipe clínica, coordenação e serviço social podem registrar sinais vitais
+  const canManageVitals = user
+    ? ([Roles.COORDENADOR, Roles.MEDICO, Roles.ENFERMEIRO, Roles.ASSISTENTE_SOCIAL] as string[]).includes(user.cargo)
+    : false;
 
   const [vitalSigns, setVitalSigns] = useState<VitalSign[]>([]);
   const [latestVital, setLatestVital] = useState<VitalSign | null>(null);
@@ -159,13 +169,16 @@ export function PatientVitalSigns() {
               {statusInfo.label}
             </span>
 
-            <Link
-              to={`/patients/${id}/vital-signs/new`}
-              className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition-all hover:bg-emerald-700 active:scale-[0.98]"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Registrar Sinais</span>
-            </Link>
+            {/* 👇 Botão de registro exibido apenas para cargos autorizados */}
+            {canManageVitals && (
+              <Link
+                to={`/patients/${id}/vital-signs/new`}
+                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition-all hover:bg-emerald-700 active:scale-[0.98]"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Registrar Sinais</span>
+              </Link>
+            )}
           </div>
         </div>
       </header>

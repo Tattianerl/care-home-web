@@ -20,7 +20,17 @@ import {
 } from "../../services/documents";
 import type { PatientDocument } from "../../types/patientDocument";
 
+import { useAuth } from "../../context/useAuth";
+import { Roles } from "../../permissions/roles";
+
 export function Documents() {
+  const { user } = useAuth();
+
+  
+  const canDeleteDocuments = user
+    ? ([Roles.ADMIN, Roles.COORDENADOR] as string[]).includes(user.cargo)
+    : false;
+
   const [documents, setDocuments] = useState<PatientDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -147,17 +157,16 @@ export function Documents() {
             </p>
           </div>
         </div>
-
-
       </header>
 
       {/* Banner de Feedback */}
       {mensagem && (
         <div
-          className={`flex items-start gap-3 rounded-xl border p-4 text-xs font-medium ${mensagem.tipo === "sucesso"
-            ? "border-emerald-200 bg-emerald-50/70 text-emerald-800"
-            : "border-rose-200 bg-rose-50/70 text-rose-800"
-            }`}
+          className={`flex items-start gap-3 rounded-xl border p-4 text-xs font-medium ${
+            mensagem.tipo === "sucesso"
+              ? "border-emerald-200 bg-emerald-50/70 text-emerald-800"
+              : "border-rose-200 bg-rose-50/70 text-rose-800"
+          }`}
         >
           {mensagem.tipo === "sucesso" ? (
             <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 mt-0.5" />
@@ -235,9 +244,9 @@ export function Documents() {
                           <span>
                             {doc.createdAt
                               ? new Date(doc.createdAt).toLocaleString("pt-BR", {
-                                dateStyle: "short",
-                                timeStyle: "short",
-                              })
+                                  dateStyle: "short",
+                                  timeStyle: "short",
+                                })
                               : "Data não informada"}
                           </span>
                         </div>
@@ -263,21 +272,23 @@ export function Documents() {
                       <span>Download</span>
                     </button>
 
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(doc.id)}
-                      disabled={isDownloading || isDeleting}
-                      aria-label={`Excluir documento ${doc.nome}`}
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-rose-100 bg-rose-50/50 px-3.5 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-100 transition-colors disabled:opacity-50"
-                      title="Excluir documento"
-                    >
-                      {isDeleting ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin text-rose-600" />
-                      ) : (
-                        <Trash2 className="h-3.5 w-3.5" />
-                      )}
-                      <span>Excluir</span>
-                    </button>
+                    {canDeleteDocuments && (
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(doc.id)}
+                        disabled={isDownloading || isDeleting}
+                        aria-label={`Excluir documento ${doc.nome}`}
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-rose-100 bg-rose-50/50 px-3.5 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-100 transition-colors disabled:opacity-50"
+                        title="Excluir documento"
+                      >
+                        {isDeleting ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin text-rose-600" />
+                        ) : (
+                          <Trash2 className="h-3.5 w-3.5" />
+                        )}
+                        <span>Excluir</span>
+                      </button>
+                    )}
                   </div>
                 </li>
               );

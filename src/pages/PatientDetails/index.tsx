@@ -44,6 +44,9 @@ import { NewNutritionalAssessmentModal } from "../../components/nutrition/NewNut
 
 import { getImcClassification } from "../../utils/nutrition";
 
+import { useAuth } from "../../context/useAuth";
+import { Roles } from "../../permissions/roles";
+
 interface PatientAppointment {
   id: string;
   titulo: string;
@@ -81,6 +84,16 @@ interface VitalSigns {
 
 export function PatientDetails() {
   const { id } = useParams();
+  const { user } = useAuth();
+
+  const canManagePatient = user
+    ? ([Roles.COORDENADOR] as string[]).includes(user.cargo)
+    : false;
+
+  
+  const canManageClinicalRecords = user
+    ? ([Roles.COORDENADOR, Roles.MEDICO, Roles.ENFERMEIRO, Roles.ASSISTENTE_SOCIAL] as string[]).includes(user.cargo)
+    : false;
 
   const [patient, setPatient] =
     useState<PatientDetails | null>(null);
@@ -367,20 +380,21 @@ export function PatientDetails() {
               <span>Timeline</span>
             </Link>
 
-            <Link
-              to={`/patients/${patient.id}/edit`}
-              className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition-all hover:bg-emerald-700 active:scale-[0.98]"
-            >
-              <Edit className="h-4 w-4" />
-              <span>Editar Residente</span>
-            </Link>
+            {canManagePatient && (
+              <Link
+                to={`/patients/${patient.id}/edit`}
+                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition-all hover:bg-emerald-700 active:scale-[0.98]"
+              >
+                <Edit className="h-4 w-4" />
+                <span>Editar Residente</span>
+              </Link>
+            )}
           </div>
         </div>
       </header>
 
       {/* DADOS PRINCIPAIS */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        {/* DADOS DO RESIDENTE */}
         <section className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
           <h2 className="flex items-center gap-2 border-b border-slate-100 pb-3 text-sm font-bold uppercase tracking-wider text-slate-800">
             <UserCheck className="h-4 w-4 text-emerald-600" />
@@ -483,7 +497,6 @@ export function PatientDetails() {
           </div>
         </section>
 
-        {/* RESPONSÁVEL */}
         <section className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
           <h2 className="flex items-center gap-2 border-b border-slate-100 pb-3 text-sm font-bold uppercase tracking-wider text-slate-800">
             <ShieldCheck className="h-4 w-4 text-emerald-600" />
@@ -802,13 +815,15 @@ export function PatientDetails() {
               Ver Histórico
             </Link>
 
-            <Link
-              to={`/patients/${id}/vital-signs/new`}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs transition-all hover:bg-emerald-700 active:scale-[0.98]"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              <span>Registrar Sinais</span>
-            </Link>
+            {canManageClinicalRecords && (
+              <Link
+                to={`/patients/${id}/vital-signs/new`}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs transition-all hover:bg-emerald-700 active:scale-[0.98]"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Registrar Sinais</span>
+              </Link>
+            )}
           </div>
         </div>
 
@@ -902,16 +917,18 @@ export function PatientDetails() {
               Ver Histórico Nutricional
             </Link>
 
-            <button
-              type="button"
-              onClick={() =>
-                setIsNutritionModalOpen(true)
-              }
-              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs transition-all hover:bg-emerald-700 active:scale-[0.98]"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              <span>Nova Avaliação</span>
-            </button>
+            {canManageClinicalRecords && (
+              <button
+                type="button"
+                onClick={() =>
+                  setIsNutritionModalOpen(true)
+                }
+                className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs transition-all hover:bg-emerald-700 active:scale-[0.98]"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Nova Avaliação</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -974,13 +991,15 @@ export function PatientDetails() {
               <ChevronRight className="h-3.5 w-3.5" />
             </Link>
 
-            <Link
-              to={`/patients/${id}/evolutions/new`}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs transition-colors hover:bg-emerald-700 active:scale-[0.98]"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              <span>Nova Evolução</span>
-            </Link>
+            {canManageClinicalRecords && (
+              <Link
+                to={`/patients/${id}/evolutions/new`}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs transition-colors hover:bg-emerald-700 active:scale-[0.98]"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Nova Evolução</span>
+              </Link>
+            )}
           </div>
         </div>
 

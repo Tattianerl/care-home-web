@@ -41,128 +41,138 @@ import { EditMedication } from "../pages/EditMedication";
 export function AppRoutes() {
   return (
     <BrowserRouter>
-  <Routes>
+      <Routes>
 
-    {/* Login */}
-    <Route path="/" element={<Login />} />
+        {/* Login */}
+        <Route path="/" element={<Login />} />
 
-    {/* Rotas protegidas */}
-    <Route element={<ProtectedRoute />}>
-      <Route element={<MainLayout />}>
+        {/* Rotas protegidas */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<MainLayout />}>
 
-        {/* Dashboard */}
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/perfil" element={<Perfil />} />
+            {/* Dashboard */}
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/perfil" element={<Perfil />} />
 
-        {/* Pacientes */}
-        <Route path="/patients" element={<Patients />} />
-        <Route path="/patients/:id" element={<PatientDetails />} />
-        <Route path="/patients/:id/edit" element={<EditPatient />} />
+            {/* Pacientes */}
+            <Route path="/patients" element={<Patients />} />
+            <Route path="/patients/:id" element={<PatientDetails />} />
+            <Route path="/patients/:id/edit" element={<EditPatient />} />
 
-        {/* Sinais vitais */}
-        <Route path="/patients/:id/vital-signs/new" element={<CreateVitalSign />}/>
-        <Route path="/patients/:id/vital-signs" element={<PatientVitalSigns />} />
-        <Route path="/vital-signs" element={<VitalSignsOverview />} />
-        <Route path="/vital-signs/latest" element={<VitalSignsOverview />} />
+            {/* Sinais vitais */}
+            <Route path="/patients/:id/vital-signs/new" element={<CreateVitalSign />}/>
+            <Route path="/patients/:id/vital-signs" element={<PatientVitalSigns />} />
+            <Route path="/vital-signs" element={<VitalSignsOverview />} />
+            <Route path="/vital-signs/latest" element={<VitalSignsOverview />} />
 
-        {/* Nutrição */}
-        <Route path="/patients/:id/nutrition" element={<PatientNutritionHistory />} />
-        <Route path="/nutritional-assessments/today" element={<TodayNutritionalAssessments />} />
-       
-        {/* Agendamentos */}
-        <Route path="/appointments" element={<Appointments />} />
-        <Route path="/appointments/new" element={<CreateAppointment />} />
-        <Route
-          path="/appointments/:id/edit"
-          element={<EditAppointment />}
-        />
-
-        {/* Evoluções */}
-        <Route
-          path="/evolutions"
-          element={<EvolutionsToday />}
-          />
-
-        <Route
-          path="/patients/:id/evolutions"
-          element={<PatientEvolutions />}
-        />
-        <Route
-          path="/patients/:id/evolutions/new"
-          element={<CreateEvolution />}
-        />
-        <Route
-          path="/evolutions/:id/edit"
-          element={<EditEvolution />}
-        />
-        {/* Medicação */}
-        <Route
-          path="/patients/:id/medications"
-          element={<PatientMedications />}
-        />
-        <Route
-          path="/patients/:id/medications/new"
-          element={<CreateMedication />}
-        />
-          <Route
-            path="/medications/:id/edit"
-            element={<EditMedication />}
-          />
-          
-        {/* Timeline */}
-        <Route
-          path="/patients/:id/timeline"
-          element={<PatientTimeline />}
-        />
-
-        {/* Documentos */}
-        <Route
-          path="/patients/:id/documents"
-          element={<PatientDocuments />}
-        />
-        <Route
-          path="/patients/:id/documents/new"
-          element={<CreatePatientDocument />}
-        />
-        <Route path="/documents"
-               element={<Documents />} />
-               
-        <Route path="/assinatura" 
-               element={<SignatureSettings />} />      
-
-        {/* Somente ADMIN */}
-        <Route
-          element={
-            <ProtectedRoute
-              allowedRoles={[Roles.ADMIN]}
+            {/* Nutrição */}
+            <Route path="/patients/:id/nutrition" element={<PatientNutritionHistory />} />
+            <Route path="/nutritional-assessments/today" element={<TodayNutritionalAssessments />} />
+           
+            {/* Agendamentos */}
+            <Route path="/appointments" element={<Appointments />} />
+            <Route path="/appointments/new" element={<CreateAppointment />} />
+            <Route
+              path="/appointments/:id/edit"
+              element={<EditAppointment />}
             />
-          }
-        >
-         <Route 
-            path="/funcionarios/new"
-            element={<CreateUser />}
+
+            {/* Evoluções */}
+            <Route
+              path="/evolutions"
+              element={<EvolutionsToday />}
             />
-            
-          <Route
-            path="/funcionarios"
-            element={<Funcionarios />}
-          />
 
-          <Route
-            path="/reports"
-            element={<Reports />}
+            <Route
+              path="/patients/:id/evolutions"
+              element={<PatientEvolutions />}
             />
-        <Route
-          path="/audit"
-          element={<Audit />}
-          />
-         </Route>
-      </Route>
-    </Route>
+            <Route
+              path="/patients/:id/evolutions/new"
+              element={<CreateEvolution />}
+            />
+            <Route
+              path="/evolutions/:id/edit"
+              element={<EditEvolution />}
+            />
+            {/* Medicação */}
+            <Route
+              path="/patients/:id/medications"
+              element={<PatientMedications />}
+            />
+            <Route
+              path="/patients/:id/medications/new"
+              element={<CreateMedication />}
+            />
+              <Route
+                path="/medications/:id/edit"
+                element={<EditMedication />}
+              />
+              
+            {/* Timeline */}
+            <Route
+              path="/patients/:id/timeline"
+              element={<PatientTimeline />}
+            />
 
-    <Route path="*" element={<NotFound />} />
+            {/* Documentos */}
+            <Route
+              path="/patients/:id/documents"
+              element={<PatientDocuments />}
+            />
+            <Route
+              path="/patients/:id/documents/new"
+              element={<CreatePatientDocument />}
+            />
+            <Route path="/documents"
+                   element={<Documents />} />
+                   
+            <Route path="/assinatura" 
+                   element={<SignatureSettings />} />      
 
-  </Routes>
-</BrowserRouter>
+            {/* Somente ADMIN (Gestão de Funcionários) */}
+            <Route
+              element={
+                <ProtectedRoute
+                  allowedRoles={[Roles.ADMIN]}
+                />
+              }
+            >
+             <Route 
+                path="/funcionarios/new"
+                element={<CreateUser />}
+                />
+                
+              <Route
+                path="/funcionarios"
+                element={<Funcionarios />}
+              />
+            </Route>
+
+            {/* ADMIN e COORDENADOR (Relatórios e Auditoria) - SEPARADO CORRETAMENTE */}
+            <Route
+              element={
+                <ProtectedRoute
+                  allowedRoles={[Roles.ADMIN, Roles.COORDENADOR]}
+                />
+              }
+            >
+              <Route
+                path="/reports"
+                element={<Reports />}
+              />
+              <Route
+                path="/audit"
+                element={<Audit />}
+              />
+            </Route>
+
+          </Route>
+        </Route>
+
+        <Route path="*" element={<NotFound />} />
+
+      </Routes>
+    </BrowserRouter>
   );
 }

@@ -20,10 +20,20 @@ import type { NutritionalAssessment } from "../../types/nutritionalAssessment";
 import type { PatientDetails } from "../../types/patientDetails";
 
 import { NewNutritionalAssessmentModal } from "../../components/nutrition/NewNutritionalAssessmentModal";
-import { getImcClassification } from "../../utils/nutrition"; // Ajuste o caminho se criou o helper separado
+import { getImcClassification } from "../../utils/nutrition";
+
+// 👇 Importando autenticação e roles
+import { useAuth } from "../../context/useAuth";
+import { Roles } from "../../permissions/roles";
 
 export function PatientNutritionHistory() {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
+
+  // 👇 Apenas equipe clínica, coordenação e serviço social podem gerenciar avaliações nutricionais
+  const canManageNutrition = user
+    ? ([Roles.COORDENADOR, Roles.MEDICO, Roles.ENFERMEIRO, Roles.ASSISTENTE_SOCIAL] as string[]).includes(user.cargo)
+    : false;
 
   const [patient, setPatient] = useState<PatientDetails | null>(null);
   const [assessments, setAssessments] = useState<NutritionalAssessment[]>([]);
@@ -42,7 +52,6 @@ export function PatientNutritionHistory() {
         nutritionService.listByPatient(id).catch(() => []),
       ]);
 
-     
       setPatient(patientData);
       setAssessments(Array.isArray(nutritionData) ? nutritionData : []);
     } catch (error) {
@@ -57,6 +66,8 @@ export function PatientNutritionHistory() {
   }, [loadData]);
 
   async function handleDelete(assessmentId: string) {
+    if (!canManageNutrition) return;
+
     if (!confirm("Tem certeza que deseja excluir esta avaliação nutricional?")) {
       return;
     }
@@ -114,14 +125,17 @@ export function PatientNutritionHistory() {
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setIsNewModalOpen(true)}
-            className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition-all hover:bg-emerald-700 active:scale-[0.98]"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Nova Avaliação</span>
-          </button>
+          {/* 👇 Botão de nova avaliação exibido apenas para cargos autorizados */}
+          {canManageNutrition && (
+            <button
+              type="button"
+              onClick={() => setIsNewModalOpen(true)}
+              className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition-all hover:bg-emerald-700 active:scale-[0.98]"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Nova Avaliação</span>
+            </button>
+          )}
         </div>
       </header>
 
@@ -133,7 +147,9 @@ export function PatientNutritionHistory() {
             Nenhuma avaliação registrada
           </h3>
           <p className="mt-1 text-xs text-slate-500">
-            Clique no botão acima para realizar o primeiro registro de peso e altura.
+            {canManageNutrition
+              ? "Clique no botão acima para realizar o primeiro registro de peso e altura."
+              : "Nenhum registro de avaliação nutricional cadastrado para este residente."}
           </p>
         </div>
       ) : (
@@ -157,19 +173,22 @@ export function PatientNutritionHistory() {
                     </span>
                   )}
 
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(item.id)}
-                    disabled={deletingId === item.id}
-                    className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 disabled:opacity-50"
-                    title="Excluir avaliação"
-                  >
-                    {deletingId === item.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-4 w-4" />
-                    )}
-                  </button>
+                  {/* 👇 Botão de exclusão exibido apenas para cargos autorizados */}
+                  {canManageNutrition && (
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(item.id)}
+                      disabled={deletingId === item.id}
+                      className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 disabled:opacity-50"
+                      title="Excluir avaliação"
+                    >
+                      {deletingId === item.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -239,7 +258,7 @@ export function PatientNutritionHistory() {
       )}
 
       {/* Modal de Nova Avaliação */}
-      {id && patient && (
+      {id && patient && canManageNutrition && (
         <NewNutritionalAssessmentModal
           isOpen={isNewModalOpen}
           onClose={() => setIsNewModalOpen(false)}

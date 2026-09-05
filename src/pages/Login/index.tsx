@@ -24,8 +24,11 @@ export function Login() {
 
       localStorage.setItem("@carehome:token", data.token);
       localStorage.setItem("@carehome:user", JSON.stringify(data.user));
-
-      window.location.href = "/dashboard";
+      if (data.user.cargo === "ADMIN") {
+        window.location.href = "/funcionarios";
+      } else {
+        window.location.href = "/dashboard";
+      }
     } catch (error) {
       console.error("Erro ao fazer login:", error);
       setErrorMessage("Email ou senha inválidos.");

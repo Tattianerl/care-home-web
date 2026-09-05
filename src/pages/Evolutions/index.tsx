@@ -8,9 +8,13 @@ import {
   deleteEvolution,
   getEvolutions,
 } from "../../services/evolutions";
-import { api } from "../../services/api"; // 👈 Ou importe o serviço específico de usuários se preferir
+import { api } from "../../services/api";
 
 import type { Evolution } from "../../types/evolution";
+
+// 👇 Importando autenticação e roles
+import { useAuth } from "../../context/useAuth";
+import { Roles } from "../../permissions/roles";
 
 interface ProfessionalOption {
   id: string;
@@ -18,6 +22,13 @@ interface ProfessionalOption {
 }
 
 export function Evolutions() {
+  const { user } = useAuth();
+
+  // 👇 Apenas equipe clínica, coordenação e serviço social podem excluir evoluções
+  const canManageEvolutions = user
+    ? ([Roles.COORDENADOR, Roles.MEDICO, Roles.ENFERMEIRO, Roles.ASSISTENTE_SOCIAL] as string[]).includes(user.cargo)
+    : false;
+
   const [evolutions, setEvolutions] = useState<Evolution[]>([]);
   const [professionals, setProfessionals] = useState<ProfessionalOption[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,7 +43,6 @@ export function Evolutions() {
   useEffect(() => {
     async function loadProfessionals() {
       try {
-        // Ajuste a rota caso seu endpoint de listagem de usuários seja diferente (ex: /users ou /staff)
         const response = await api.get("/users"); 
         const data = response.data.users || response.data;
         
@@ -49,7 +59,6 @@ export function Evolutions() {
     void loadProfessionals();
   }, []);
 
-  // 2. Carrega as evoluções aplicando os filtros direto no backend
   useEffect(() => {
     let cancelled = false;
 
@@ -83,6 +92,8 @@ export function Evolutions() {
   }, [professional, startDate, endDate]);
 
   async function handleDelete(id: string) {
+    if (!canManageEvolutions) return;
+
     const confirmed = window.confirm(
       "Deseja excluir esta evolução?"
     );
@@ -153,7 +164,7 @@ export function Evolutions() {
         onStartDateChange={setStartDate}
         onEndDateChange={setEndDate}
         onClear={clearFilters}
-        professionalsList={professionals} // 👈 Preenchido com a lista real buscada da API
+        professionalsList={professionals}
       />
 
       {loading ? (
@@ -169,7 +180,8 @@ export function Evolutions() {
               key={evolution.id}
               evolution={evolution}
               deleting={deletingId === evolution.id}
-              onDelete={handleDelete}
+              // Se tiver permissão executa a exclusão, senão passa função vazia para ocultar/desativar
+              onDelete={canManageEvolutions ? handleDelete : () => {}}
             />
           ))}
         </div>

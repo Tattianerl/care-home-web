@@ -14,6 +14,10 @@ import { EvolutionCard } from "../../components/evolutions/EvolutionCard";
 import { EvolutionFilters } from "../../components/evolutions/EvolutionFilters";
 import { EmptyEvolution } from "../../components/evolutions/EmptyEvolution";
 
+// 👇 Importando autenticação e roles
+import { useAuth } from "../../context/useAuth";
+import { Roles } from "../../permissions/roles";
+
 interface Professional {
   id: string;
   nome: string;
@@ -22,6 +26,12 @@ interface Professional {
 export function PatientEvolutions() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // 👇 Apenas equipe clínica, coordenação e serviço social podem criar/excluir evoluções
+  const canManageEvolutions = user
+    ? ([Roles.COORDENADOR, Roles.MEDICO, Roles.ENFERMEIRO, Roles.ASSISTENTE_SOCIAL] as string[]).includes(user.cargo)
+    : false;
 
   const [patientName, setPatientName] = useState("");
   const [evolutions, setEvolutions] = useState<Evolution[]>([]);
@@ -72,6 +82,8 @@ export function PatientEvolutions() {
   }, [loadData]);
 
   async function handleDelete(evolutionId: string) {
+    if (!canManageEvolutions) return;
+
     const confirmed = window.confirm("Deseja excluir esta evolução?");
     if (!confirmed) return;
 
@@ -146,14 +158,16 @@ export function PatientEvolutions() {
           </div>
         </div>
 
-        {/* Botão principal de ação mantido em Emerald para consistência de fluxo */}
-        <Link
-          to={`/patients/${id}/evolutions/new`}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors shadow-sm"
-        >
-          <Plus size={18} />
-          Nova Evolução
-        </Link>
+        {/* 👇 Botão de Nova Evolução exibido apenas para perfis autorizados */}
+        {canManageEvolutions && (
+          <Link
+            to={`/patients/${id}/evolutions/new`}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors shadow-sm"
+          >
+            <Plus size={18} />
+            Nova Evolução
+          </Link>
+        )}
       </div>
 
       {/* Barra de Filtros Refinada */}
@@ -193,7 +207,7 @@ export function PatientEvolutions() {
               key={evolution.id}
               evolution={evolution}
               deleting={false}
-              onDelete={handleDelete}
+              onDelete={canManageEvolutions ? handleDelete : () => {}}
             />
           ))}
         </div>

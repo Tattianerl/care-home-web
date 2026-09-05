@@ -12,6 +12,9 @@ import { useNavigate } from "react-router-dom";
 import { EvolutionActions } from "./EvolutionActions";
 
 import type { Evolution } from "../../types/evolution";
+// 👇 Importando autenticação e roles
+import { useAuth } from "../../context/useAuth";
+import { Roles } from "../../permissions/roles";
 
 interface Props {
   evolution: Evolution;
@@ -27,6 +30,12 @@ export function EvolutionCard({
   onDelete,
 }: Props) {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // 👇 Apenas equipe clínica, coordenação e serviço social podem ver as ações de editar/excluir
+  const canManageEvolutions = user
+    ? ([Roles.COORDENADOR, Roles.MEDICO, Roles.ENFERMEIRO, Roles.ASSISTENTE_SOCIAL] as string[]).includes(user.cargo)
+    : false;
 
   return (
     <div
@@ -149,23 +158,25 @@ export function EvolutionCard({
         </div>
       </div>
 
-      <EvolutionActions
-        deleting={deleting}
-        onEdit={() =>
-          navigate(
-            `/evolutions/${evolution.id}/edit`,
-            {
-              state: {
-                evolution,
-              },
-            }
-          )
-        }
-        onDelete={() =>
-          onDelete(evolution.id)
-        }
-      />
+      {/* 👇 Exibe os botões de ação apenas se o usuário tiver permissão */}
+      {canManageEvolutions && (
+        <EvolutionActions
+          deleting={deleting}
+          onEdit={() =>
+            navigate(
+              `/evolutions/${evolution.id}/edit`,
+              {
+                state: {
+                  evolution,
+                },
+              }
+            )
+          }
+          onDelete={() =>
+            onDelete(evolution.id)
+          }
+        />
+      )}
     </div>
   );
 }
-

@@ -191,7 +191,7 @@ export function CreatePatientDocument() {
             </h1>
 
             <p className="mt-0.5 text-xs font-medium text-slate-500">
-              FaÃ§a upload de laudos, exames ou documentos de identificaÃ§Ã£o.
+              Faça upload de laudos, exames ou documentos de identificação.
             </p>
           </div>
         </div>

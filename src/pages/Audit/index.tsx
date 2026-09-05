@@ -7,6 +7,7 @@ import {
   ChevronRight,
   AlertCircle,
   CheckCircle2,
+  Lock,
 } from "lucide-react";
 
 import {
@@ -20,6 +21,9 @@ import type { AuditLog, AuditSummary } from "../../types/auditLog";
 import { AuditCards } from "../../components/audit/AuditCards";
 import { AuditFilters } from "../../components/audit/AuditFilters";
 import { AuditTable } from "../../components/audit/AuditTable";
+// 👇 Importando autenticação e roles
+import { useAuth } from "../../context/useAuth";
+import { Roles } from "../../permissions/roles";
 
 interface AuditFiltersState {
   usuario?: string;
@@ -30,6 +34,13 @@ interface AuditFiltersState {
 }
 
 export function Audit() {
+  const { user } = useAuth();
+
+  // 👇 Auditoria restrita estritamente a Admin e Coordenador
+  const canViewAudit = user
+    ? ([Roles.ADMIN, Roles.COORDENADOR] as string[]).includes(user.cargo)
+    : false;
+
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [summary, setSummary] = useState<AuditSummary>({ total: 0 });
 
@@ -45,6 +56,9 @@ export function Audit() {
   } | null>(null);
 
   useEffect(() => {
+    // Se não tiver permissão, nem faz requisição à API
+    if (!canViewAudit) return;
+
     let isMounted = true;
 
     async function fetchAuditData() {
@@ -86,7 +100,24 @@ export function Audit() {
     return () => {
       isMounted = false;
     };
-  }, [page, filters]);
+  }, [page, filters, canViewAudit]);
+
+  // Se o usuário não tiver permissão, exibe uma tela de acesso restrito limpa e profissional
+  if (!canViewAudit) {
+    return (
+      <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-xs">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 mb-3">
+          <Lock className="h-6 w-6" />
+        </div>
+        <h2 className="text-base font-bold text-slate-800">
+          Acesso Restrito
+        </h2>
+        <p className="mt-1 max-w-sm text-xs text-slate-500">
+          Você não possui permissão para visualizar os registros de auditoria e segurança do sistema.
+        </p>
+      </div>
+    );
+  }
 
   function handleFilter(data: AuditFiltersState) {
     setPage(1);
@@ -171,10 +202,11 @@ export function Audit() {
       {/* Banner de Mensagens e Alertas */}
       {mensagem && (
         <div
-          className={`flex items-start gap-3 rounded-xl border p-4 text-xs font-medium ${mensagem.tipo === "sucesso"
+          className={`flex items-start gap-3 rounded-xl border p-4 text-xs font-medium ${
+            mensagem.tipo === "sucesso"
               ? "border-emerald-200 bg-emerald-50/70 text-emerald-800"
               : "border-rose-200 bg-rose-50/70 text-rose-800"
-            }`}
+          }`}
         >
           {mensagem.tipo === "sucesso" ? (
             <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 mt-0.5" />

@@ -6,6 +6,7 @@ import {
   Check,
   Pill,
   Loader2,
+  Lock,
 } from "lucide-react";
 
 import {
@@ -14,6 +15,9 @@ import {
 } from "../../services/medications";
 
 import type { MedicationStatus } from "../../types/enums";
+
+import { useAuth } from "../../context/useAuth";
+import { Roles } from "../../permissions/roles";
 
 const medicationStatuses: {
   value: MedicationStatus;
@@ -36,6 +40,12 @@ const medicationStatuses: {
 export function CreateMedication() {
   const { id: patientId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // 👇 Apenas equipe clínica e coordenador podem prescrever/cadastrar medicações
+  const canManageMedications = user
+    ? ([Roles.COORDENADOR, Roles.MEDICO, Roles.ENFERMEIRO] as string[]).includes(user.cargo)
+    : false;
 
   const [form, setForm] = useState<CreateMedicationInput>({
     nome: "",
@@ -55,6 +65,32 @@ export function CreateMedication() {
   const [horario, setHorario] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Se o usuário não tiver permissão, bloqueia a tela de cadastro imediatamente
+  if (!canManageMedications) {
+    return (
+      <div className="mx-auto max-w-4xl space-y-4 rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-xs">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 mb-3">
+          <Lock className="h-6 w-6" />
+        </div>
+        <h2 className="text-base font-bold text-slate-800">
+          Acesso Restrito
+        </h2>
+        <p className="mx-auto mt-1 max-w-sm text-xs text-slate-500">
+          Apenas profissionais de saúde e coordenação possuem permissão para cadastrar ou prescrever medicações.
+        </p>
+        <div className="pt-4">
+          <Link
+            to={`/patients/${patientId}/medications`}
+            className="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-200"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar para medicações
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   function handleChange(
     field: keyof CreateMedicationInput,
@@ -479,3 +515,4 @@ function Field({
     </div>
   );
 }
+

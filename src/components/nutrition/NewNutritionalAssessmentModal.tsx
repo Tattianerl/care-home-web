@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { X, Scale, Ruler, Activity, AlertCircle } from "lucide-react";
+import { X, Scale, Ruler, Activity, AlertCircle, Lock } from "lucide-react";
 import { AxiosError } from "axios";
 import { nutritionService } from "../../services/nutritionService";
 import type { NutritionalAssessment } from "../../types/nutritionalAssessment";
+// 👇 Importando autenticação e roles
+import { useAuth } from "../../context/useAuth";
+import { Roles } from "../../permissions/roles";
 
 interface NewNutritionalAssessmentModalProps {
   isOpen: boolean;
@@ -19,6 +22,13 @@ export function NewNutritionalAssessmentModal({
   patientName,
   onSuccess,
 }: NewNutritionalAssessmentModalProps) {
+  const { user } = useAuth();
+
+  // 👇 Apenas equipe clínica, coordenação e serviço social podem criar avaliações nutricionais
+  const canManageNutrition = user
+    ? ([Roles.COORDENADOR, Roles.MEDICO, Roles.ENFERMEIRO, Roles.ASSISTENTE_SOCIAL] as string[]).includes(user.cargo)
+    : false;
+
   const [peso, setPeso] = useState<string>("");
   const [altura, setAltura] = useState<string>("");
   const [observacoes, setObservacoes] = useState<string>("");
@@ -79,6 +89,11 @@ export function NewNutritionalAssessmentModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+
+    if (!canManageNutrition) {
+      setErrorMessage("Você não possui permissão para registrar avaliações nutricionais.");
+      return;
+    }
 
     const numPeso = parseFloat(peso.replace(",", "."));
     let numAltura = parseFloat(altura.replace(",", "."));
@@ -144,116 +159,138 @@ export function NewNutritionalAssessmentModal({
           </button>
         </div>
 
-        {/* Corpo do Formulário */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {errorMessage && (
-            <div className="flex items-center gap-2 rounded-lg bg-rose-50 border border-rose-200 p-3 text-xs text-rose-700">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              <span>{errorMessage}</span>
+        {/* Verificação de Permissão de Acesso */}
+        {!canManageNutrition ? (
+          <div className="p-8 text-center space-y-3">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-600">
+              <Lock className="h-6 w-6" />
             </div>
-          )}
-
-          <div className="grid grid-cols-2 gap-4">
-            {/* Campo Peso */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Peso (kg) <span className="text-rose-500">*</span>
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                  <Scale className="h-4 w-4" />
-                </div>
-                <input
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  placeholder="Ex: 68.5"
-                  value={peso}
-                  onChange={(e) => setPeso(e.target.value)}
-                  required
-                  className="w-full rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                />
-              </div>
-            </div>
-
-            {/* Campo Altura */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Altura (m ou cm) <span className="text-rose-500">*</span>
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                  <Ruler className="h-4 w-4" />
-                </div>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  placeholder="Ex: 1.65 ou 165"
-                  value={altura}
-                  onChange={(e) => setAltura(e.target.value)}
-                  required
-                  className="w-full rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                />
-              </div>
+            <h3 className="text-sm font-bold text-slate-800">Acesso Restrito</h3>
+            <p className="text-xs text-slate-500 max-w-xs mx-auto">
+              Apenas profissionais de saúde, assistência social e coordenação possuem autorização para registrar avaliações nutricionais.
+            </p>
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={handleClose}
+                className="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors"
+              >
+                Fechar
+              </button>
             </div>
           </div>
-
-          {/* Card de Cálculo em Tempo Real do IMC */}
-          <div className="rounded-xl bg-slate-50 border border-slate-200 p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Activity className="h-5 w-5 text-emerald-600" />
-                <span className="text-xs font-semibold text-slate-700">
-                  IMC Calculado (Tempo Real):
-                </span>
-              </div>
-              <span className="text-base font-extrabold text-slate-900">
-                {imcCalculado !== null ? imcCalculado : "—"}
-              </span>
-            </div>
-
-            {classificacaoImc && (
-              <div className="mt-2 pt-2 border-t border-slate-200 text-xs flex justify-between items-center">
-                <span className="text-slate-500">Classificação (Idoso):</span>
-                <span className={corClassificacao}>{classificacaoImc}</span>
+        ) : (
+          /* Corpo do Formulário */
+          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            {errorMessage && (
+              <div className="flex items-center gap-2 rounded-lg bg-rose-50 border border-rose-200 p-3 text-xs text-rose-700">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span>{errorMessage}</span>
               </div>
             )}
-          </div>
 
-          {/* Campo Observações */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Observações / Apetite / Conduta
-            </label>
-            <textarea
-              rows={3}
-              placeholder="Ex: Boa aceitação da dieta pastosa. Apresenta leve ganho de peso em relação ao mês anterior."
-              value={observacoes}
-              onChange={(e) => setObservacoes(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 resize-none"
-            />
-          </div>
+            <div className="grid grid-cols-2 gap-4">
+              {/* Campo Peso */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Peso (kg) <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <Scale className="h-4 w-4" />
+                  </div>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    placeholder="Ex: 68.5"
+                    value={peso}
+                    onChange={(e) => setPeso(e.target.value)}
+                    required
+                    className="w-full rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
 
-          {/* Botões de Ação */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={handleClose}
-              disabled={isSubmitting}
-              className="px-4 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="px-4 py-2 text-xs font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors flex items-center gap-2"
-            >
-              {isSubmitting ? "Salvando..." : "Salvar Avaliação"}
-            </button>
-          </div>
-        </form>
+              {/* Campo Altura */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Altura (m ou cm) <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <Ruler className="h-4 w-4" />
+                  </div>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="Ex: 1.65 ou 165"
+                    value={altura}
+                    onChange={(e) => setAltura(e.target.value)}
+                    required
+                    className="w-full rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Card de Cálculo em Tempo Real do IMC */}
+            <div className="rounded-xl bg-slate-50 border border-slate-200 p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Activity className="h-5 w-5 text-emerald-600" />
+                  <span className="text-xs font-semibold text-slate-700">
+                    IMC Calculado (Tempo Real):
+                  </span>
+                </div>
+                <span className="text-base font-extrabold text-slate-900">
+                  {imcCalculado !== null ? imcCalculado : "—"}
+                </span>
+              </div>
+
+              {classificacaoImc && (
+                <div className="mt-2 pt-2 border-t border-slate-200 text-xs flex justify-between items-center">
+                  <span className="text-slate-500">Classificação (Idoso):</span>
+                  <span className={corClassificacao}>{classificacaoImc}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Campo Observações */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Observações / Apetite / Conduta
+              </label>
+              <textarea
+                rows={3}
+                placeholder="Ex: Boa aceitação da dieta pastosa. Apresenta leve ganho de peso em relação ao mês anterior."
+                value={observacoes}
+                onChange={(e) => setObservacoes(e.target.value)}
+                className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 resize-none"
+              />
+            </div>
+
+            {/* Botões de Ação */}
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={handleClose}
+                disabled={isSubmitting}
+                className="px-4 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="px-4 py-2 text-xs font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors flex items-center gap-2"
+              >
+                {isSubmitting ? "Salvando..." : "Salvar Avaliação"}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );

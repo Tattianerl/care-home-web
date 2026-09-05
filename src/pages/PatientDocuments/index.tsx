@@ -23,6 +23,9 @@ import {
 
 import type { PatientDocument } from "../../types/patientDocument";
 
+import { useAuth } from "../../context/useAuth";
+import { Roles } from "../../permissions/roles";
+
 interface Feedback {
   tipo: "sucesso" | "erro";
   texto: string;
@@ -56,6 +59,15 @@ function formatDocumentDate(date: string): string {
 
 export function PatientDocuments() {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
+
+  const canManageDocuments = user
+    ? ([Roles.ADMIN, Roles.COORDENADOR, Roles.MEDICO, Roles.ENFERMEIRO, Roles.ASSISTENTE_SOCIAL, Roles.RECEPCAO] as string[]).includes(user.cargo)
+    : false;
+
+  const canDeleteDocuments = user
+    ? ([Roles.ADMIN, Roles.COORDENADOR, Roles.ENFERMEIRO, Roles.ASSISTENTE_SOCIAL] as string[]).includes(user.cargo)
+    : false;
 
   const [documents, setDocuments] = useState<PatientDocument[]>([]);
 
@@ -196,18 +208,20 @@ export function PatientDocuments() {
               </h1>
 
               <p className="mt-0.5 text-xs font-medium text-slate-500">
-                Gerencie exames, laudos e arquivos anexados ao prontuário.
+                Consulte exames, laudos e arquivos anexados ao prontuário.
               </p>
             </div>
           </div>
 
-          <Link
-            to={`/patients/${id}/documents/new`}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition-all hover:bg-emerald-700 active:scale-[0.98]"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Novo Documento</span>
-          </Link>
+          {canManageDocuments && (
+            <Link
+              to={`/patients/${id}/documents/new`}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition-all hover:bg-emerald-700 active:scale-[0.98]"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Novo Documento</span>
+            </Link>
+          )}
         </div>
       </header>
 
@@ -252,7 +266,7 @@ export function PatientDocuments() {
 
             <p className="mt-1 max-w-sm text-xs text-slate-500">
               Ainda não existem arquivos anexados para este residente.
-              Clique no botão acima para adicionar.
+              {canManageDocuments && " Clique no botão acima para adicionar."}
             </p>
           </div>
         ) : (
@@ -312,21 +326,24 @@ export function PatientDocuments() {
                       <span>Download</span>
                     </button>
 
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(document.id)}
-                      disabled={isDownloading || isDeleting}
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-rose-100 bg-rose-50/50 px-3.5 py-2 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-100 disabled:opacity-50"
-                      title="Excluir documento"
-                    >
-                      {isDeleting ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin text-rose-600" />
-                      ) : (
-                        <Trash2 className="h-3.5 w-3.5" />
-                      )}
+                    {/* Botão Excluir */}
+                    {canDeleteDocuments && (
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(document.id)}
+                        disabled={isDownloading || isDeleting}
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-rose-100 bg-rose-50/50 px-3.5 py-2 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-100 disabled:opacity-50"
+                        title="Excluir documento"
+                      >
+                        {isDeleting ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin text-rose-600" />
+                        ) : (
+                          <Trash2 className="h-3.5 w-3.5" />
+                        )}
 
-                      <span>Excluir</span>
-                    </button>
+                        <span>Excluir</span>
+                      </button>
+                    )}
                   </div>
                 </li>
               );

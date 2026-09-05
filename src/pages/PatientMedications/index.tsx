@@ -18,8 +18,16 @@ import {
 
 import type { Medication } from "../../types/medication";
 
+import { useAuth } from "../../context/useAuth";
+import { Roles } from "../../permissions/roles";
+
 export function PatientMedications() {
   const { id } = useParams();
+  const { user } = useAuth();
+
+  const canManageMedications = user
+    ? ([Roles.ADMIN, Roles.COORDENADOR, Roles.MEDICO, Roles.ENFERMEIRO] as string[]).includes(user.cargo)
+    : false;
 
   const [medications, setMedications] = useState<Medication[]>([]);
   const [loading, setLoading] = useState(true);
@@ -148,13 +156,15 @@ export function PatientMedications() {
             </p>
           </div>
 
-          <Link
-            to={`/patients/${id}/medications/new`}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition-all hover:bg-emerald-700 active:scale-[0.98]"
-          >
-            <Plus className="h-4 w-4" />
-            Novo Medicamento
-          </Link>
+          {canManageMedications && (
+            <Link
+              to={`/patients/${id}/medications/new`}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition-all hover:bg-emerald-700 active:scale-[0.98]"
+            >
+              <Plus className="h-4 w-4" />
+              Novo Medicamento
+            </Link>
+          )}
         </div>
       </header>
 
@@ -207,16 +217,20 @@ export function PatientMedications() {
             </p>
 
             <p className="mt-1 text-xs text-slate-400">
-              Cadastre o primeiro medicamento deste residente.
+              {canManageMedications
+                ? "Cadastre o primeiro medicamento deste residente."
+                : "Ainda não há registros de medicamentos para este residente."}
             </p>
 
-            <Link
-              to={`/patients/${id}/medications/new`}
-              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700"
-            >
-              <Plus className="h-4 w-4" />
-              Cadastrar medicamento
-            </Link>
+            {canManageMedications && (
+              <Link
+                to={`/patients/${id}/medications/new`}
+                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700"
+              >
+                <Plus className="h-4 w-4" />
+                Cadastrar medicamento
+              </Link>
+            )}
           </div>
         ) : (
           <div className="space-y-4">
@@ -320,16 +334,18 @@ export function PatientMedications() {
                   </div>
                 )}
 
-                {/* RODAPÉ */}
-                <div className="mt-4 flex justify-end border-t border-slate-100 pt-4">
-                  <Link
-                    to={`/medications/${medication.id}/edit`}
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50"
-                  >
-                    <Edit className="h-3.5 w-3.5" />
-                    Editar
-                  </Link>
-                </div>
+                {/* RODAPÉ - Oculta botão de Editar para quem não gerencia */}
+                {canManageMedications && (
+                  <div className="mt-4 flex justify-end border-t border-slate-100 pt-4">
+                    <Link
+                      to={`/medications/${medication.id}/edit`}
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+                    >
+                      <Edit className="h-3.5 w-3.5" />
+                      Editar
+                    </Link>
+                  </div>
+                )}
               </article>
             ))}
           </div>
