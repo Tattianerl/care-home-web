@@ -11,7 +11,7 @@ export async function login(
   email: string,
   senha: string
 ): Promise<LoginResponse> {
-  const { data } = await api.post<LoginResponse>("/auth/login", {
+  const { data } = await api.post<LoginResponse>("/login", {
     email,
     senha,
   });
