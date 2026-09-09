@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import type { FormEvent, MouseEvent, ChangeEvent } from "react";
 
@@ -108,7 +107,7 @@ export function RegisterPatientModal({
     useState<PatientFormData>(INITIAL_FORM_STATE);
 
   /*
-   * Fecha o modal e limpa o formulÃ¡rio.
+   * Fecha o modal e limpa o formulário.
    */
   const handleResetAndClose = useCallback(() => {
     if (loading) return;
@@ -141,7 +140,7 @@ export function RegisterPatientModal({
   }
 
   /*
-   * Atualiza qualquer campo do formulÃ¡rio.
+   * Atualiza qualquer campo do formulário.
    */
   const handleChange = (
     event: ChangeEvent<
@@ -171,7 +170,7 @@ export function RegisterPatientModal({
   };
 
   /*
-   * Envio do formulÃ¡rio.
+   * Envio do formulário.
    */
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -187,30 +186,22 @@ export function RegisterPatientModal({
     }
 
     if (!formData.genero) {
-      alert("Selecione o gÃªnero.");
+      alert("Selecione o gênero.");
       return;
     }
 
     if (!formData.responsavel.trim()) {
-      alert("Informe o responsÃ¡vel.");
+      alert("Informe o responsável.");
       return;
     }
 
     if (!formData.telefone.trim()) {
-      alert("Informe o telefone do responsÃ¡vel.");
+      alert("Informe o telefone do responsável.");
       return;
     }
 
     try {
       setLoading(true);
-
-      /*
-       * O payload contÃ©m somente os campos que podem
-       * ser cadastrados pelo formulÃ¡rio.
-       *
-       * id, ativo, falecido e createdAt sÃ£o controlados
-       * pelo backend.
-       */
       const payload: PatientData = {
         nome: formData.nome.trim(),
 
@@ -279,7 +270,8 @@ export function RegisterPatientModal({
           formData.alergias.trim() || undefined,
 
         diagnosticos:
-          formData.diagnosticos.trim() || undefined,
+          formData.diagnosticos.trim() ||
+          undefined,
 
         restricaoAlimentar:
           formData.restricaoAlimentar.trim() ||
@@ -293,7 +285,7 @@ export function RegisterPatientModal({
           formData.dataInternacao || undefined,
 
         /*
-         * Novo residente comeÃ§a como nÃ£o falecido.
+         * Novo residente começa como não falecido.
          */
         falecido: false,
       };
@@ -333,7 +325,7 @@ export function RegisterPatientModal({
     >
       <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-xl">
         {/* =====================================================
-            CABEÃ‡ALHO
+            CABEÇALHO
         ====================================================== */}
         <div className="flex items-center justify-between border-b border-slate-100 p-6 pb-4">
           <div className="flex items-center gap-3.5">
@@ -348,7 +340,7 @@ export function RegisterPatientModal({
 
               <p className="text-xs font-medium text-slate-500">
                 Preencha os dados pessoais, familiares e
-                clÃ­nicos do residente.
+                clínicos do residente.
               </p>
             </div>
           </div>
@@ -364,7 +356,7 @@ export function RegisterPatientModal({
         </div>
 
         {/* =====================================================
-            FORMULÃRIO
+            FORMULÁRIO
         ====================================================== */}
         <form
           onSubmit={handleSubmit}
@@ -416,10 +408,10 @@ export function RegisterPatientModal({
                   />
                 </div>
 
-                {/* GÃªnero */}
+                {/* Gênero */}
                 <div>
                   <label className="block font-semibold text-slate-700">
-                    GÃªnero{" "}
+                    Gênero{" "}
                     <span className="text-rose-500">*</span>
                   </label>
 
@@ -476,7 +468,7 @@ export function RegisterPatientModal({
                     name="rg"
                     value={formData.rg}
                     onChange={handleChange}
-                    placeholder="NÃºmero do RG"
+                    placeholder="Número do RG"
                     className="mt-1 w-full rounded-xl border border-slate-200 bg-white p-2.5 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                   />
                 </div>
@@ -510,7 +502,7 @@ export function RegisterPatientModal({
                     className="mt-1 w-full rounded-xl border border-slate-200 bg-white p-2.5 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                   >
                     <option value="">
-                      NÃ£o informado
+                      Não informado
                     </option>
 
                     <option value={MaritalStatus.SOLTEIRO}>
@@ -526,19 +518,19 @@ export function RegisterPatientModal({
                     </option>
 
                     <option value={MaritalStatus.VIUVO}>
-                      ViÃºvo(a)
+                      Viúvo(a)
                     </option>
 
                     <option value={MaritalStatus.UNIAO_ESTAVEL}>
-                      UniÃ£o EstÃ¡vel
+                      União Estável
                     </option>
                   </select>
                 </div>
 
-                {/* CartÃ£o SUS */}
+                {/* Cartão SUS */}
                 <div>
                   <label className="block font-semibold text-slate-700">
-                    CartÃ£o SUS
+                    Cartão SUS
                   </label>
 
                   <input
@@ -546,7 +538,7 @@ export function RegisterPatientModal({
                     name="cartaoSus"
                     value={formData.cartaoSus}
                     onChange={handleChange}
-                    placeholder="NÃºmero do CartÃ£o SUS"
+                    placeholder="Número do Cartão SUS"
                     className="mt-1 w-full rounded-xl border border-slate-200 bg-white p-2.5 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                   />
                 </div>
@@ -570,19 +562,19 @@ export function RegisterPatientModal({
             </section>
 
             {/* =================================================
-                2. RESPONSÃVEL
+                2. RESPONSÁVEL
             ================================================== */}
             <section className="space-y-3.5">
               <h3 className="flex items-center gap-2 border-b border-slate-100 pb-2 text-xs font-bold uppercase tracking-wider text-emerald-700">
                 <ShieldCheck className="h-4 w-4" />
-                2. ResponsÃ¡vel Legal / Familiar
+                2. Responsável Legal / Familiar
               </h3>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {/* ResponsÃ¡vel */}
+                {/* Responsável */}
                 <div>
                   <label className="block font-semibold text-slate-700">
-                    Nome do ResponsÃ¡vel{" "}
+                    Nome do Responsável{" "}
                     <span className="text-rose-500">*</span>
                   </label>
 
@@ -615,10 +607,10 @@ export function RegisterPatientModal({
                   />
                 </div>
 
-                {/* CPF responsÃ¡vel */}
+                {/* CPF responsável */}
                 <div>
                   <label className="block font-semibold text-slate-700">
-                    CPF do ResponsÃ¡vel
+                    CPF do Responsável
                   </label>
 
                   <input
@@ -651,7 +643,7 @@ export function RegisterPatientModal({
                 {/* Email */}
                 <div>
                   <label className="block font-semibold text-slate-700">
-                    E-mail do ResponsÃ¡vel
+                    E-mail do Responsável
                   </label>
 
                   <input
@@ -664,10 +656,10 @@ export function RegisterPatientModal({
                   />
                 </div>
 
-                {/* EndereÃ§o */}
+                {/* Endereço */}
                 <div>
                   <label className="block font-semibold text-slate-700">
-                    EndereÃ§o do ResponsÃ¡vel
+                    Endereço do Responsável
                   </label>
 
                   <input
@@ -675,7 +667,7 @@ export function RegisterPatientModal({
                     name="responsavelEndereco"
                     value={formData.responsavelEndereco}
                     onChange={handleChange}
-                    placeholder="EndereÃ§o completo"
+                    placeholder="Endereço completo"
                     className="mt-1 w-full rounded-xl border border-slate-200 bg-white p-2.5 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                   />
                 </div>
@@ -683,19 +675,19 @@ export function RegisterPatientModal({
             </section>
 
             {/* =================================================
-                3. SAÃšDE
+                3. SAÚDE
             ================================================== */}
             <section className="space-y-3.5">
               <h3 className="flex items-center gap-2 border-b border-slate-100 pb-2 text-xs font-bold uppercase tracking-wider text-emerald-700">
                 <HeartPulse className="h-4 w-4" />
-                3. SaÃºde e InternaÃ§Ã£o
+                3. Saúde e Internação
               </h3>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {/* Grau dependÃªncia */}
+                {/* Grau dependência */}
                 <div>
                   <label className="block font-semibold text-slate-700">
-                    Grau de DependÃªncia
+                    Grau de Dependência
                   </label>
 
                   <select
@@ -705,7 +697,7 @@ export function RegisterPatientModal({
                     className="mt-1 w-full rounded-xl border border-slate-200 bg-white p-2.5 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                   >
                     <option value="">
-                      NÃ£o informado
+                      Não informado
                     </option>
 
                     <option value={DependencyLevel.INDEPENDENTE}>
@@ -713,19 +705,19 @@ export function RegisterPatientModal({
                     </option>
 
                     <option value={DependencyLevel.PARCIAL}>
-                      DependÃªncia Parcial
+                      Dependência Parcial
                     </option>
 
                     <option value={DependencyLevel.TOTAL}>
-                      DependÃªncia Total
+                      Dependência Total
                     </option>
                   </select>
                 </div>
 
-                {/* Tipo sanguÃ­neo */}
+                {/* Tipo sanguíneo */}
                 <div>
                   <label className="block font-semibold text-slate-700">
-                    Tipo SanguÃ­neo
+                    Tipo Sanguíneo
                   </label>
 
                   <select
@@ -735,7 +727,7 @@ export function RegisterPatientModal({
                     className="mt-1 w-full rounded-xl border border-slate-200 bg-white p-2.5 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                   >
                     <option value="">
-                      NÃ£o informado
+                      Não informado
                     </option>
 
                     <option value={BloodType.A_POSITIVO}>
@@ -775,7 +767,7 @@ export function RegisterPatientModal({
                 {/* Plano */}
                 <div>
                   <label className="block font-semibold text-slate-700">
-                    Plano de SaÃºde
+                    Plano de Saúde
                   </label>
 
                   <input
@@ -783,15 +775,15 @@ export function RegisterPatientModal({
                     name="planoSaude"
                     value={formData.planoSaude}
                     onChange={handleChange}
-                    placeholder="Ex.: Unimed - nÂº 12345"
+                    placeholder="Ex.: Unimed - nº 12345"
                     className="mt-1 w-full rounded-xl border border-slate-200 bg-white p-2.5 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                   />
                 </div>
 
-                {/* Data internaÃ§Ã£o */}
+                {/* Data internação */}
                 <div>
                   <label className="block font-semibold text-slate-700">
-                    Data de InternaÃ§Ã£o
+                    Data de Internação
                   </label>
 
                   <input
@@ -803,10 +795,10 @@ export function RegisterPatientModal({
                   />
                 </div>
 
-                {/* Contato emergÃªncia */}
+                {/* Contato emergência */}
                 <div className="md:col-span-2">
                   <label className="block font-semibold text-slate-700">
-                    Contato de EmergÃªncia
+                    Contato de Emergência
                   </label>
 
                   <input
@@ -819,10 +811,10 @@ export function RegisterPatientModal({
                   />
                 </div>
 
-                {/* HistÃ³rico mÃ©dico */}
+                {/* Histórico médico */}
                 <div>
                   <label className="block font-semibold text-slate-700">
-                    HistÃ³rico MÃ©dico
+                    Histórico Médico
                   </label>
 
                   <textarea
@@ -830,15 +822,15 @@ export function RegisterPatientModal({
                     rows={3}
                     value={formData.historicoMedico}
                     onChange={handleChange}
-                    placeholder="CondiÃ§Ãµes clÃ­nicas, cirurgias, internaÃ§Ãµes anteriores..."
+                    placeholder="Condições clínicas, cirurgias, internações anteriores..."
                     className="mt-1 w-full resize-none rounded-xl border border-slate-200 bg-white p-2.5 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                   />
                 </div>
 
-                {/* DiagnÃ³sticos */}
+                {/* Diagnósticos */}
                 <div>
                   <label className="block font-semibold text-slate-700">
-                    DiagnÃ³sticos
+                    Diagnósticos
                   </label>
 
                   <textarea
@@ -846,7 +838,7 @@ export function RegisterPatientModal({
                     rows={3}
                     value={formData.diagnosticos}
                     onChange={handleChange}
-                    placeholder="DiagnÃ³sticos relevantes..."
+                    placeholder="Diagnósticos relevantes..."
                     className="mt-1 w-full resize-none rounded-xl border border-slate-200 bg-white p-2.5 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                   />
                 </div>
@@ -854,12 +846,12 @@ export function RegisterPatientModal({
             </section>
 
             {/* =================================================
-                4. NUTRIÃ‡ÃƒO E ALERGIAS
+                4. NUTRIÇÃO E ALERGIAS
             ================================================== */}
             <section className="space-y-3.5">
               <h3 className="flex items-center gap-2 border-b border-slate-100 pb-2 text-xs font-bold uppercase tracking-wider text-emerald-700">
                 <Utensils className="h-4 w-4" />
-                4. NutriÃ§Ã£o e Alergias
+                4. Nutrição e Alergias
               </h3>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -879,10 +871,10 @@ export function RegisterPatientModal({
                   />
                 </div>
 
-                {/* RestriÃ§Ã£o alimentar */}
+                {/* Restrição alimentar */}
                 <div>
                   <label className="block font-semibold text-slate-700">
-                    RestriÃ§Ã£o / Dieta Alimentar
+                    Restrição / Dieta Alimentar
                   </label>
 
                   <input
@@ -890,15 +882,15 @@ export function RegisterPatientModal({
                     name="restricaoAlimentar"
                     value={formData.restricaoAlimentar}
                     onChange={handleChange}
-                    placeholder="Ex.: HipossÃ³dica, Dieta Pastosa"
+                    placeholder="Ex.: Hipossódica, Dieta Pastosa"
                     className="mt-1 w-full rounded-xl border border-slate-200 bg-white p-2.5 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                   />
                 </div>
 
-                {/* ObservaÃ§Ãµes */}
+                {/* Observações */}
                 <div className="md:col-span-2">
                   <label className="block font-semibold text-slate-700">
-                    ObservaÃ§Ãµes Gerais
+                    Observações Gerais
                   </label>
 
                   <textarea
@@ -906,7 +898,7 @@ export function RegisterPatientModal({
                     rows={3}
                     value={formData.observacoes}
                     onChange={handleChange}
-                    placeholder="InformaÃ§Ãµes adicionais relevantes para a rotina de cuidados..."
+                    placeholder="Informações adicionais relevantes para a rotina de cuidados..."
                     className="mt-1 w-full resize-none rounded-xl border border-slate-200 bg-white p-2.5 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                   />
                 </div>
@@ -914,27 +906,27 @@ export function RegisterPatientModal({
             </section>
 
             {/* =================================================
-                5. DOCUMENTAÃ‡ÃƒO / INFORMAÃ‡Ã•ES COMPLEMENTARES
+                5. DOCUMENTAÇÃO / INFORMAÇÕES COMPLEMENTARES
             ================================================== */}
             <section className="space-y-3.5">
               <h3 className="flex items-center gap-2 border-b border-slate-100 pb-2 text-xs font-bold uppercase tracking-wider text-emerald-700">
                 <FileText className="h-4 w-4" />
-                5. InformaÃ§Ãµes Complementares
+                5. Informações Complementares
               </h3>
 
               <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-4">
                 <p className="text-xs leading-relaxed text-slate-600">
-                  ApÃ³s o cadastro, documentos como receitas,
-                  exames, contratos, documentos de identificaÃ§Ã£o
-                  e outros arquivos poderÃ£o ser adicionados ao
-                  prontuÃ¡rio do residente.
+                  Após o cadastro, documentos como receitas,
+                  exames, contratos, documentos de identificação
+                  e outros arquivos poderão ser adicionados ao
+                  prontuário do residente.
                 </p>
               </div>
             </section>
           </div>
 
           {/* ===================================================
-              RODAPÃ‰
+              RODAPÉ
           ==================================================== */}
           <div className="flex items-center justify-end gap-2.5 border-t border-slate-100 bg-slate-50/50 p-4">
             <button
