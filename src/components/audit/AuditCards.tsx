@@ -41,24 +41,17 @@ export function AuditCards({ summary }: Props) {
       icon: Trash2,
       color: "bg-red-50 text-red-600",
     },
-    {
-      title: "Desativações",
-      value: summary.DEACTIVATE ?? 0,
-      subtitle: "Registros desativados",
-      icon: Pencil,
-      color: "bg-red-50 text-red-600",
-    },
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4 mb-8">
+    <div className="mb-8 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
       {cards.map((card) => {
         const Icon = card.icon;
 
         return (
           <div
             key={card.title}
-            className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition"
+            className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:shadow-md"
           >
             <div className="flex items-start justify-between">
               <div>
@@ -66,17 +59,17 @@ export function AuditCards({ summary }: Props) {
                   {card.title}
                 </p>
 
-                <h2 className="text-3xl font-bold text-gray-800 mt-2">
+                <h2 className="mt-2 text-3xl font-bold text-gray-800">
                   {card.value}
                 </h2>
 
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="mt-1 text-xs text-gray-400">
                   {card.subtitle}
                 </p>
               </div>
 
               <div
-                className={`w-12 h-12 rounded-xl flex items-center justify-center ${card.color}`}
+                className={`flex h-12 w-12 items-center justify-center rounded-xl ${card.color}`}
               >
                 <Icon size={24} />
               </div>
@@ -87,3 +80,4 @@ export function AuditCards({ summary }: Props) {
     </div>
   );
 }
+
