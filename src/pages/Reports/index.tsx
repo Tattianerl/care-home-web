@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Users,
@@ -24,7 +23,31 @@ interface ReportItem {
   csvFilename: string;
   pdfEndpoint: string;
   pdfFilename: string;
+  allowedRoles: string[];
 }
+
+interface LoggedUser {
+  cargo?: string;
+}
+
+const REPORT_ROLES = {
+  ADMIN: ["ADMIN"],
+  PATIENTS: ["COORDENADOR", "MEDICO", "ENFERMEIRO"],
+  EVOLUTIONS: [
+    "COORDENADOR",
+    "MEDICO",
+    "ENFERMEIRO",
+    "FISIOTERAPEUTA",
+    "NUTRICIONISTA",
+    "PSICOLOGO",
+    "ASSISTENTE_SOCIAL",
+    "TERAPEUTA_OCUPACIONAL",
+    "FONOAUDIOLOGO",
+  ],
+  MEDICATIONS: ["COORDENADOR", "MEDICO", "ENFERMEIRO"],
+  VITAL_SIGNS: ["COORDENADOR", "MEDICO", "ENFERMEIRO", "TECNICO_ENFERMAGEM"],
+  DOCUMENTS: ["COORDENADOR"],
+} as const;
 
 export function Reports() {
   const [downloadingKey, setDownloadingKey] = useState<string | null>(null);
@@ -34,10 +57,7 @@ export function Reports() {
     texto: string;
   } | null>(null);
 
-  async function handleExport(
-    endpoint: string,
-    filename: string,
-  ) {
+  async function handleExport(endpoint: string, filename: string) {
     setMensagem(null);
     setDownloadingKey(endpoint);
 
@@ -92,6 +112,7 @@ export function Reports() {
       csvFilename: "carehome_residentes.csv",
       pdfEndpoint: "/reports/patients/pdf",
       pdfFilename: "carehome_residentes.pdf",
+      allowedRoles: [...REPORT_ROLES.PATIENTS],
     },
     {
       title: "Evoluções",
@@ -102,6 +123,7 @@ export function Reports() {
       csvFilename: "carehome_evolucoes.csv",
       pdfEndpoint: "/reports/evolutions/pdf",
       pdfFilename: "carehome_evolucoes.pdf",
+      allowedRoles: [...REPORT_ROLES.EVOLUTIONS],
     },
     {
       title: "Medicamentos",
@@ -112,6 +134,7 @@ export function Reports() {
       csvFilename: "carehome_medicamentos.csv",
       pdfEndpoint: "/reports/medications/pdf",
       pdfFilename: "carehome_medicamentos.pdf",
+      allowedRoles: [...REPORT_ROLES.MEDICATIONS],
     },
     {
       title: "Sinais Vitais",
@@ -122,6 +145,7 @@ export function Reports() {
       csvFilename: "carehome_sinais_vitais.csv",
       pdfEndpoint: "/reports/vitals/pdf",
       pdfFilename: "carehome_sinais_vitais.pdf",
+      allowedRoles: [...REPORT_ROLES.VITAL_SIGNS],
     },
     {
       title: "Documentos",
@@ -132,6 +156,7 @@ export function Reports() {
       csvFilename: "carehome_documentos.csv",
       pdfEndpoint: "/reports/documents/pdf",
       pdfFilename: "carehome_documentos.pdf",
+      allowedRoles: [...REPORT_ROLES.DOCUMENTS],
     },
     {
       title: "Auditoria",
@@ -142,8 +167,26 @@ export function Reports() {
       csvFilename: "carehome_auditoria.csv",
       pdfEndpoint: "/reports/audit/pdf",
       pdfFilename: "carehome_auditoria.pdf",
+      allowedRoles: [...REPORT_ROLES.ADMIN, "COORDENADOR"],
     },
   ];
+
+  const storedUser = localStorage.getItem("@carehome:user");
+
+  let cargo = "";
+
+  if (storedUser) {
+    try {
+      const user: LoggedUser = JSON.parse(storedUser);
+      cargo = String(user.cargo || "").toUpperCase();
+    } catch (error) {
+      console.error("Erro ao ler usuário autenticado:", error);
+    }
+  }
+
+  const visibleReports = reports.filter((report) =>
+    report.allowedRoles.includes(cargo),
+  );
 
   return (
     <div className="max-w-7xl space-y-8 pb-10">
@@ -186,7 +229,7 @@ export function Reports() {
 
       {/* Grid de Cards de Relatórios */}
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-        {reports.map((report) => (
+        {visibleReports.map((report) => (
           <ReportCard
             key={report.title}
             title={report.title}
@@ -195,16 +238,10 @@ export function Reports() {
             loadingCsv={downloadingKey === report.csvEndpoint}
             loadingPdf={downloadingKey === report.pdfEndpoint}
             onExportCsv={() =>
-              handleExport(
-                report.csvEndpoint,
-                report.csvFilename,
-              )
+              handleExport(report.csvEndpoint, report.csvFilename)
             }
             onExportPdf={() =>
-              handleExport(
-                report.pdfEndpoint,
-                report.pdfFilename,
-              )
+              handleExport(report.pdfEndpoint, report.pdfFilename)
             }
           />
         ))}
@@ -212,4 +249,3 @@ export function Reports() {
     </div>
   );
 }
-

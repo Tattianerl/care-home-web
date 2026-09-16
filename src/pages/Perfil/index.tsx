@@ -40,7 +40,7 @@ export function Perfil() {
     if (novaSenha.length < 6) {
       setMensagem({
         tipo: "erro",
-        texto: "A nova senha deve ter pelo menos 6 caracteres.",
+        texto: "A nova senha deve ter pelo menos 8 caracteres.",
       });
       return;
     }
