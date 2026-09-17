@@ -15,21 +15,21 @@ import { api } from "../../services/api";
 import type { VitalSign } from "../../types/vitalSigns";
 import { evaluateVitalStatus } from "../../types/vitalSigns";
 
-// 👇 Importando autenticação e roles
 import { useAuth } from "../../context/useAuth";
-import { Roles } from "../../permissions/roles";
+import { can } from "../../permissions/can";
+import { Permissions } from "../../permissions/permissions";
 
 export function PatientVitalSigns() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
 
-  // 👇 Apenas equipe clínica, coordenação e serviço social podem registrar sinais vitais
-  const canManageVitals = user
-    ? ([Roles.COORDENADOR, Roles.MEDICO, Roles.ENFERMEIRO, Roles.ASSISTENTE_SOCIAL] as string[]).includes(user.cargo)
+  const canCreateVitalSigns = user
+    ? can(user.cargo, Permissions.CREATE_VITAL_SIGNS)
     : false;
 
   const [vitalSigns, setVitalSigns] = useState<VitalSign[]>([]);
-  const [latestVital, setLatestVital] = useState<VitalSign | null>(null);
+  const [latestVital, setLatestVital] =
+    useState<VitalSign | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,12 +44,18 @@ export function PatientVitalSigns() {
       try {
         setLoading(true);
 
-        const [historyResponse, latestResponse] = await Promise.all([
-          api.get<VitalSign[]>(`/patients/${id}/vital-signs`),
-          api.get<VitalSign>(`/patients/${id}/vital-signs/latest`).catch(
-            () => null,
-          ),
-        ]);
+        const [historyResponse, latestResponse] =
+          await Promise.all([
+            api.get<VitalSign[]>(
+              `/patients/${id}/vital-signs`
+            ),
+
+            api
+              .get<VitalSign>(
+                `/patients/${id}/vital-signs/latest`
+              )
+              .catch(() => null),
+          ]);
 
         if (!isMounted) return;
 
@@ -58,9 +64,14 @@ export function PatientVitalSigns() {
           : [];
 
         setVitalSigns(history);
-        setLatestVital(latestResponse?.data ?? history[0] ?? null);
+        setLatestVital(
+          latestResponse?.data ?? history[0] ?? null
+        );
       } catch (error: unknown) {
-        console.error("Erro ao carregar sinais vitais:", error);
+        console.error(
+          "Erro ao carregar sinais vitais:",
+          error
+        );
 
         if (isMounted) {
           setVitalSigns([]);
@@ -98,7 +109,8 @@ export function PatientVitalSigns() {
     if (!vital) {
       return {
         label: "Sem Registros",
-        color: "bg-slate-100 text-slate-700 border-slate-200",
+        color:
+          "bg-slate-100 text-slate-700 border-slate-200",
       };
     }
 
@@ -115,13 +127,15 @@ export function PatientVitalSigns() {
       case "alerta":
         return {
           label: "Atenção",
-          color: "bg-amber-50 text-amber-700 border-amber-200",
+          color:
+            "bg-amber-50 text-amber-700 border-amber-200",
         };
 
       default:
         return {
           label: "Estável",
-          color: "bg-emerald-50 text-emerald-700 border-emerald-200",
+          color:
+            "bg-emerald-50 text-emerald-700 border-emerald-200",
         };
     }
   }
@@ -169,8 +183,7 @@ export function PatientVitalSigns() {
               {statusInfo.label}
             </span>
 
-            {/* 👇 Botão de registro exibido apenas para cargos autorizados */}
-            {canManageVitals && (
+            {canCreateVitalSigns && (
               <Link
                 to={`/patients/${id}/vital-signs/new`}
                 className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition-all hover:bg-emerald-700 active:scale-[0.98]"
