@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { FileText, Loader2, ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { CalendarDays, ClipboardList } from "lucide-react";
 
-import { deleteEvolution, getEvolutions } from "../../services/evolutions";
-import { api } from "../../services/api";
+import {
+  deleteEvolution,
+  getEvolutions,
+} from "../../services/evolutions";
 
 import type { Evolution } from "../../types/evolution";
 
@@ -11,185 +12,146 @@ import { EvolutionCard } from "../../components/evolutions/EvolutionCard";
 import { EvolutionFilters } from "../../components/evolutions/EvolutionFilters";
 import { EmptyEvolution } from "../../components/evolutions/EmptyEvolution";
 
-interface Professional {
-  id: string;
-  nome: string;
-  cargo?: string;
-}
+import { useAuth } from "../../context/useAuth";
+import { can } from "../../permissions/can";
+import { Permissions } from "../../permissions/permissions";
 
 export function EvolutionsToday() {
+  const { user } = useAuth();
+
+  const canDeleteEvolution = user
+    ? can(user.cargo, Permissions.DELETE_EVOLUTION)
+    : false;
+
   const [evolutions, setEvolutions] = useState<Evolution[]>([]);
-  const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Estados dos Filtros
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [professional, setProfessional] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-
-  const navigate = useNavigate();
-
-  const loadData = useCallback(async () => {
-    try {
-      setLoading(true);
-
-      const hasCustomDate = Boolean(startDate || endDate);
-
-      // Busca evoluções respeitando apenas a data no backend (deixando a busca por usuário/cargo dinâmica)
-      const evolutionsPromise = getEvolutions({
-        today: hasCustomDate ? undefined : true,
-        professional: professional || undefined,
-        startDate: startDate || undefined,
-        endDate: endDate || undefined,
-      });
-
-      const usersPromise = api.get("/users").catch((err) => {
-        console.warn("Falha ao carregar lista de profissionais:", err);
-        return { data: [] };
-      });
-
-      const [evolutionsRes, usersRes] = await Promise.all([
-        evolutionsPromise,
-        usersPromise,
-      ]);
-
-      const evolutionsData = Array.isArray(evolutionsRes)
-        ? evolutionsRes
-        : evolutionsRes?.evolutions || [];
-
-      setEvolutions(evolutionsData);
-
-      if (usersRes?.data && Array.isArray(usersRes.data)) {
-        setProfessionals(usersRes.data);
-      }
-    } catch (error) {
-      console.error("Erro ao carregar evoluções:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [professional, startDate, endDate]);
 
   useEffect(() => {
+    async function loadData() {
+      try {
+        setLoading(true);
+
+        const data = await getEvolutions({
+          today: true,
+        });
+
+        setEvolutions(data.evolutions || []);
+      } catch (error) {
+        console.error("Erro ao carregar evoluções de hoje:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
     void loadData();
-  }, [loadData]);
+  }, []);
 
   async function handleDelete(id: string) {
-    const confirmed = window.confirm("Deseja excluir esta evolução?");
+    if (!canDeleteEvolution) return;
+
+    const confirmed = window.confirm(
+      "Deseja realmente excluir esta evolução?"
+    );
+
     if (!confirmed) return;
 
     try {
+      setDeletingId(id);
+
       await deleteEvolution(id);
-      await loadData();
+
+      setEvolutions((current) =>
+        current.filter((evolution) => evolution.id !== id)
+      );
     } catch (error) {
       console.error("Erro ao excluir evolução:", error);
+    } finally {
+      setDeletingId(null);
     }
   }
 
-  function clearFilters() {
-    setSearch("");
-    setProfessional("");
-    setStartDate("");
-    setEndDate("");
-  }
+  const filteredEvolutions = useMemo(() => {
+    const term = search.toLowerCase().trim();
 
-  // Filtragem local multi-critério (Paciente, Descrição, Usuário, ID e Cargo)
-  const filtered = useMemo(() => {
+    if (!term) {
+      return evolutions;
+    }
+
     return evolutions.filter((item) => {
-      const term = search.toLowerCase().trim();
-      const selectedProf = professional.trim();
-
-      const userName = item.user?.nome || "";
-      const userCargo = item.user?.cargo || "";
-      const patientName = item.patient?.nome || "";
-      const description = item.descricao || "";
-      const userId = String(item.user?.id || "");
-
-      // 1. Busca por Texto Aberto (digitação no input search)
-      const matchesSearch =
-        !term ||
-        patientName.toLowerCase().includes(term) ||
-        description.toLowerCase().includes(term) ||
-        userName.toLowerCase().includes(term) ||
-        userCargo.toLowerCase().includes(term);
-
-      // 2. Filtro de Profissional selecionado no Select (compara por ID, Nome ou Cargo)
-      const matchesProfessional =
-        !selectedProf ||
-        userId === selectedProf ||
-        userName.toLowerCase() === selectedProf.toLowerCase() ||
-        userCargo.toLowerCase() === selectedProf.toLowerCase();
-
-      return matchesSearch && matchesProfessional;
+      return (
+        item.patient.nome.toLowerCase().includes(term) ||
+        item.user.nome.toLowerCase().includes(term) ||
+        item.descricao.toLowerCase().includes(term)
+      );
     });
-  }, [evolutions, search, professional]);
-
-  const isCustomPeriod = Boolean(startDate || endDate);
+  }, [evolutions, search]);
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      {/* Cabeçalho */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
-            title="Voltar"
-          >
-            <ArrowLeft size={20} />
-          </button>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <CalendarDays className="text-purple-600" size={28} />
+
           <div>
-            <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-              <FileText className="text-emerald-600" />
-              {isCustomPeriod ? "Evoluções Registradas" : "Evoluções de Hoje"}
+            <h1 className="text-2xl font-bold text-gray-800">
+              Evoluções de Hoje
             </h1>
+
             <p className="text-sm text-gray-500">
-              {isCustomPeriod
-                ? "Exibindo evoluções filtradas pelo período selecionado."
-                : "Visualize e gerencie todas as evoluções registradas na data de hoje."}
+              Acompanhe as evoluções registradas hoje.
             </p>
           </div>
         </div>
+
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <ClipboardList size={18} />
+          <span>
+            {filteredEvolutions.length}{" "}
+            {filteredEvolutions.length === 1
+              ? "evolução"
+              : "evoluções"}
+          </span>
+        </div>
       </div>
 
-      {/* Barra de Filtros */}
       <EvolutionFilters
         search={search}
-        professional={professional}
-        startDate={startDate}
-        endDate={endDate}
-        professionalsList={professionals}
+        professional=""
+        startDate=""
+        endDate=""
+        professionalsList={[]}
         onSearchChange={setSearch}
-        onProfessionalChange={setProfessional}
-        onStartDateChange={setStartDate}
-        onEndDateChange={setEndDate}
-        onClear={clearFilters}
+        onProfessionalChange={() => {}}
+        onStartDateChange={() => {}}
+        onEndDateChange={() => {}}
+        onClear={() => setSearch("")}
       />
 
-      {/* Lista de Resultados */}
       {loading ? (
         <div className="flex justify-center py-12">
           <div className="flex items-center gap-3 text-sm text-gray-500">
-            <Loader2 className="h-5 w-5 animate-spin th-5 w-5 text-emerald-600" />
+            <div className="h-5 w-5 rounded-full border-2 border-purple-600 border-t-transparent animate-spin" />
             Carregando evoluções...
           </div>
         </div>
-      ) : filtered.length === 0 ? (
+      ) : filteredEvolutions.length === 0 ? (
         <div className="bg-white rounded-xl p-8 text-center border border-gray-100 text-gray-500">
-          {evolutions.length === 0 ? (
-            <EmptyEvolution />
-          ) : (
-            "Nenhum resultado encontrado para os filtros aplicados."
-          )}
+          <EmptyEvolution />
         </div>
       ) : (
         <div className="space-y-4">
-          {filtered.map((evolution) => (
+          {filteredEvolutions.map((evolution) => (
             <EvolutionCard
               key={evolution.id}
               evolution={evolution}
-              deleting={false}
-              onDelete={handleDelete}
+              deleting={deletingId === evolution.id}
+              onDelete={
+                canDeleteEvolution
+                  ? handleDelete
+                  : () => {}
+              }
             />
           ))}
         </div>

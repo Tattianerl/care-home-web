@@ -1,9 +1,7 @@
-import { Edit, Trash2, Loader2 } from "lucide-react";
-
 interface Props {
   deleting: boolean;
-  onEdit(): void;
-  onDelete(): void;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
 export function EvolutionActions({
@@ -12,64 +10,27 @@ export function EvolutionActions({
   onDelete,
 }: Props) {
   return (
-    <div className="flex sm:flex-col gap-2 shrink-0 w-full sm:w-auto">
+    <div className="flex items-center gap-2">
+      {onEdit && (
+        <button
+          type="button"
+          onClick={onEdit}
+          className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
+        >
+          Editar
+        </button>
+      )}
 
-      <button
-        onClick={onEdit}
-        className="
-          inline-flex
-          items-center
-          justify-center
-          gap-2
-          rounded-lg
-          border
-          border-slate-200
-          bg-white
-          px-3
-          py-2
-          text-xs
-          font-semibold
-          text-slate-700
-          hover:bg-slate-50
-        "
-      >
-        <Edit size={15} />
-        Editar
-      </button>
-
-      <button
-        onClick={onDelete}
-        disabled={deleting}
-        className="
-          inline-flex
-          items-center
-          justify-center
-          gap-2
-          rounded-lg
-          border
-          border-rose-200
-          bg-white
-          px-3
-          py-2
-          text-xs
-          font-semibold
-          text-rose-600
-          hover:bg-rose-50
-          disabled:opacity-50
-        "
-      >
-        {deleting ? (
-          <Loader2
-            size={15}
-            className="animate-spin"
-          />
-        ) : (
-          <Trash2 size={15} />
-        )}
-
-        Excluir
-      </button>
-
+      {onDelete && (
+        <button
+          type="button"
+          onClick={onDelete}
+          disabled={deleting}
+          className="text-sm font-medium text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {deleting ? "Excluindo..." : "Excluir"}
+        </button>
+      )}
     </div>
   );
 }

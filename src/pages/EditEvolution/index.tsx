@@ -1,149 +1,157 @@
-import axios from "axios";
-import { useState } from "react";
-import type { FormEvent } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { Lock, ArrowLeft } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft, Save } from "lucide-react";
 
-import { api } from "../../services/api";
-import { Button } from "../../components/ui/Button";
-// 👇 Importando autenticação e roles
+import {
+  getEvolutions,
+  updateEvolution,
+} from "../../services/evolutions";
+
 import { useAuth } from "../../context/useAuth";
-import { Roles } from "../../permissions/roles";
-
-interface LocationState {
-  evolution?: {
-    id: string;
-    descricao: string;
-  };
-}
+import { can } from "../../permissions/can";
+import { Permissions } from "../../permissions/permissions";
 
 export function EditEvolution() {
-  const { id } = useParams(); 
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const location = useLocation();
   const { user } = useAuth();
 
-  // 👇 Apenas equipe clínica, coordenação e serviço social podem editar evoluções
-  const canManageEvolutions = user
-    ? ([Roles.COORDENADOR, Roles.MEDICO, Roles.ENFERMEIRO, Roles.ASSISTENTE_SOCIAL] as string[]).includes(user.cargo)
+  const canEditEvolution = user
+    ? can(user.cargo, Permissions.EDIT_EVOLUTION)
     : false;
-  
-  const state = location.state as LocationState;
-  const [descricao, setDescricao] = useState(() => state?.evolution?.descricao || "");
-  
-  const [loading, setLoading] = useState(false);
 
-  // Se o usuário não tiver permissão clínica, bloqueia o acesso imediatamente
-  if (!canManageEvolutions) {
+  const [descricao, setDescricao] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    async function loadEvolution() {
+      if (!id || !canEditEvolution) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const data = await getEvolutions();
+        const evolution = data.evolutions.find(
+          (item) => item.id === id
+        );
+
+        if (evolution) {
+          setDescricao(evolution.descricao || "");
+        }
+      } catch (error) {
+        console.error("Erro ao carregar evolução:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    void loadEvolution();
+  }, [id, canEditEvolution]);
+
+  if (!canEditEvolution) {
     return (
-      <div className="mx-auto max-w-2xl space-y-4 rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-xs">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 mb-3">
-          <Lock className="h-6 w-6" />
-        </div>
-        <h2 className="text-base font-bold text-slate-800">
-          Acesso Restrito
-        </h2>
-        <p className="mx-auto mt-1 max-w-sm text-xs text-slate-500">
-          Apenas profissionais de saúde, assistência social e coordenação possuem permissão para editar evoluções clínicas.
-        </p>
-        <div className="pt-4">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 cursor-pointer"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Voltar
-          </button>
+      <div className="p-6 max-w-3xl mx-auto">
+        <div className="bg-white rounded-xl border border-gray-100 p-8 text-center">
+          <h1 className="text-xl font-semibold text-gray-800 mb-2">
+            Acesso não permitido
+          </h1>
+
+          <p className="text-gray-500">
+            Seu perfil não possui permissão para editar evoluções.
+          </p>
         </div>
       </div>
     );
   }
 
-  // Efeito mantido para garantir integridade via state
-  // (Nota: mantido com useEffect padrão sem quebrar regras do React)
-  // ...
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-
-    if (!id) return;
+    if (!id || !descricao.trim()) return;
 
     try {
-      setLoading(true);
-      await api.put(`/evolutions/${id}`, {
-        descricao,
+      setSaving(true);
+
+      await updateEvolution(id, {
+        descricao: descricao.trim(),
       });
 
-      alert("Evolução atualizada com sucesso!");
-      navigate(-1); 
+      navigate(-1);
     } catch (error) {
       console.error("Erro ao atualizar evolução:", error);
-      
-      if (axios.isAxiosError(error)) {
-        const backendError = error.response?.data?.error;
-        if (backendError) {
-          alert(`Erro do Servidor: ${backendError}`);
-          return;
-        }
-      }
-      
-      alert("Erro ao atualizar a evolução. Verifique os dados digitados.");
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   }
 
+  if (loading) {
+    return (
+      <div className="p-6 max-w-3xl mx-auto">
+        <div className="bg-white rounded-xl border border-gray-100 p-8 text-center text-gray-500">
+          Carregando evolução...
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
+    <div className="p-6 max-w-3xl mx-auto space-y-6">
+      <div className="flex items-center gap-4">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
+          title="Voltar"
+        >
+          <ArrowLeft size={20} />
+        </button>
+
         <div>
-          <button 
-            type="button"
-            onClick={() => navigate(-1)} 
-            className="text-sm text-blue-600 hover:underline bg-transparent border-none cursor-pointer p-0"
-          >
-            ← Voltar para a lista
-          </button>
-          <h1 className="text-3xl font-bold mt-1">Editar Evolução</h1>
+          <h1 className="text-2xl font-bold text-gray-800">
+            Editar Evolução
+          </h1>
+
+          <p className="text-sm text-gray-500">
+            Atualize as informações da evolução do residente.
+          </p>
         </div>
       </div>
 
       <form
         onSubmit={handleSubmit}
-        className="max-w-2xl space-y-4 rounded-xl bg-white p-6 shadow"
+        className="bg-white rounded-xl border border-gray-100 p-6 space-y-5"
       >
-        {/* RELATÓRIO / DESCRIÇÃO */}
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-gray-700 block">
-            Relatório de Evolução Diária *
+        <div>
+          <label
+            htmlFor="descricao"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Evolução
           </label>
+
           <textarea
-            placeholder="Digite aqui o relatório detalhado da evolução do paciente..."
+            id="descricao"
             value={descricao}
-            onChange={(e) => setDescricao(e.target.value)}
-            className="w-full rounded-lg border p-3 h-48 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+            onChange={(event) => setDescricao(event.target.value)}
+            rows={8}
+            className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            placeholder="Digite a evolução do residente..."
             required
           />
         </div>
-          <div className="flex justify-end gap-3 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => navigate(-1)}
-            >
-              Cancelar
-            </Button>
 
-            <Button
-              type="submit"
-              variant="success"
-              disabled={loading}
-            >
-              {loading ? "Salvando..." : "Salvar Alterações"}
-            </Button>
-          </div>
-            
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={saving || !descricao.trim()}
+            className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <Save size={18} />
+            {saving ? "Salvando..." : "Salvar Alterações"}
+          </button>
+        </div>
       </form>
     </div>
   );

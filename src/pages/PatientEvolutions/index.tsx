@@ -14,9 +14,9 @@ import { EvolutionCard } from "../../components/evolutions/EvolutionCard";
 import { EvolutionFilters } from "../../components/evolutions/EvolutionFilters";
 import { EmptyEvolution } from "../../components/evolutions/EmptyEvolution";
 
-// 👇 Importando autenticação e roles
 import { useAuth } from "../../context/useAuth";
-import { Roles } from "../../permissions/roles";
+import { can } from "../../permissions/can";
+import { Permissions } from "../../permissions/permissions";
 
 interface Professional {
   id: string;
@@ -28,9 +28,12 @@ export function PatientEvolutions() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // 👇 Apenas equipe clínica, coordenação e serviço social podem criar/excluir evoluções
-  const canManageEvolutions = user
-    ? ([Roles.COORDENADOR, Roles.MEDICO, Roles.ENFERMEIRO, Roles.ASSISTENTE_SOCIAL] as string[]).includes(user.cargo)
+  const canCreateEvolution = user
+    ? can(user.cargo, Permissions.CREATE_EVOLUTION)
+    : false;
+
+  const canDeleteEvolution = user
+    ? can(user.cargo, Permissions.DELETE_EVOLUTION)
     : false;
 
   const [patientName, setPatientName] = useState("");
@@ -63,15 +66,23 @@ export function PatientEvolutions() {
         setProfessionalsList(usersRes.data);
       } else {
         const map = new Map<string, Professional>();
+
         (patientRes.evolutions || []).forEach((item) => {
           if (!map.has(item.user.id)) {
-            map.set(item.user.id, { id: item.user.id, nome: item.user.nome });
+            map.set(item.user.id, {
+              id: item.user.id,
+              nome: item.user.nome,
+            });
           }
         });
+
         setProfessionalsList(Array.from(map.values()));
       }
     } catch (error) {
-      console.error("Erro ao carregar dados das evoluções do residente:", error);
+      console.error(
+        "Erro ao carregar dados das evoluções do residente:",
+        error
+      );
     } finally {
       setLoading(false);
     }
@@ -82,7 +93,7 @@ export function PatientEvolutions() {
   }, [loadData]);
 
   async function handleDelete(evolutionId: string) {
-    if (!canManageEvolutions) return;
+    if (!canDeleteEvolution) return;
 
     const confirmed = window.confirm("Deseja excluir esta evolução?");
     if (!confirmed) return;
@@ -107,6 +118,7 @@ export function PatientEvolutions() {
     return evolutions.filter((item) => {
       // 1. Busca textual (Paciente, Descrição ou Profissional)
       const term = search.toLowerCase();
+
       const matchesSearch =
         !term ||
         item.patient.nome.toLowerCase().includes(term) ||
@@ -119,8 +131,12 @@ export function PatientEvolutions() {
 
       // 3. Filtro por Período de Datas
       const itemDate = new Date(item.createdAt).getTime();
-      const start = startDate ? new Date(`${startDate}T00:00:00`).getTime() : null;
-      const end = endDate ? new Date(`${endDate}T23:59:59`).getTime() : null;
+      const start = startDate
+        ? new Date(`${startDate}T00:00:00`).getTime()
+        : null;
+      const end = endDate
+        ? new Date(`${endDate}T23:59:59`).getTime()
+        : null;
 
       const matchesStartDate = !start || itemDate >= start;
       const matchesEndDate = !end || itemDate <= end;
@@ -146,20 +162,23 @@ export function PatientEvolutions() {
           >
             <ArrowLeft size={20} />
           </button>
+
           <div>
             <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-              {/* Ícone Roxo mantido para dar identidade ao módulo clínico/evoluções */}
               <FileText className="text-purple-600" />
               Evoluções do Residente
             </h1>
+
             <p className="text-sm text-gray-500">
-              {patientName ? `Residente: ${patientName}` : "Carregando paciente..."}
+              {patientName
+                ? `Residente: ${patientName}`
+                : "Carregando paciente..."}
             </p>
           </div>
         </div>
 
-        {/* 👇 Botão de Nova Evolução exibido apenas para perfis autorizados */}
-        {canManageEvolutions && (
+        {/* Botão de Nova Evolução exibido apenas para perfis autorizados */}
+        {canCreateEvolution && (
           <Link
             to={`/patients/${id}/evolutions/new`}
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors shadow-sm"
@@ -207,7 +226,7 @@ export function PatientEvolutions() {
               key={evolution.id}
               evolution={evolution}
               deleting={false}
-              onDelete={canManageEvolutions ? handleDelete : () => {}}
+              onDelete={canDeleteEvolution ? handleDelete : () => {}}
             />
           ))}
         </div>
@@ -215,3 +234,4 @@ export function PatientEvolutions() {
     </div>
   );
 }
+
