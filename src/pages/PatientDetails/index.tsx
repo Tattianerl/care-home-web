@@ -90,9 +90,38 @@ export function PatientDetails() {
     ? ([Roles.COORDENADOR] as string[]).includes(user.cargo)
     : false;
 
-  
-  const canManageClinicalRecords = user
-    ? ([Roles.COORDENADOR, Roles.MEDICO, Roles.ENFERMEIRO, Roles.ASSISTENTE_SOCIAL] as string[]).includes(user.cargo)
+  const canCreateEvolution = user
+    ? (
+        [
+          Roles.ENFERMEIRO,
+          Roles.MEDICO,
+          Roles.FISIOTERAPEUTA,
+          Roles.NUTRICIONISTA,
+          Roles.PSICOLOGO,
+          Roles.ASSISTENTE_SOCIAL,
+          Roles.TERAPEUTA_OCUPACIONAL,
+          Roles.FONOAUDIOLOGO,
+        ] as string[]
+      ).includes(user.cargo)
+    : false;
+
+  const canManageVitalSigns = user
+    ? (
+        [
+          Roles.ENFERMEIRO,
+          Roles.TECNICO_ENFERMAGEM,
+          Roles.MEDICO,
+        ] as string[]
+      ).includes(user.cargo)
+    : false;
+
+  const canManageNutrition = user
+    ? (
+        [
+          Roles.MEDICO,
+          Roles.NUTRICIONISTA,
+        ] as string[]
+      ).includes(user.cargo)
     : false;
 
   const [patient, setPatient] =
@@ -815,7 +844,7 @@ export function PatientDetails() {
               Ver Histórico
             </Link>
 
-            {canManageClinicalRecords && (
+            {canManageVitalSigns && (
               <Link
                 to={`/patients/${id}/vital-signs/new`}
                 className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs transition-all hover:bg-emerald-700 active:scale-[0.98]"
@@ -917,7 +946,7 @@ export function PatientDetails() {
               Ver Histórico Nutricional
             </Link>
 
-            {canManageClinicalRecords && (
+            {canManageNutrition && (
               <button
                 type="button"
                 onClick={() =>
@@ -991,7 +1020,7 @@ export function PatientDetails() {
               <ChevronRight className="h-3.5 w-3.5" />
             </Link>
 
-            {canManageClinicalRecords && (
+            {canCreateEvolution && (
               <Link
                 to={`/patients/${id}/evolutions/new`}
                 className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs transition-colors hover:bg-emerald-700 active:scale-[0.98]"

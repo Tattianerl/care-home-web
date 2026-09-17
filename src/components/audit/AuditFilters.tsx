@@ -17,7 +17,6 @@ interface Props {
 export function AuditFilters({ onSearch, onClear }: Props) {
   const formRef = useRef<HTMLFormElement>(null);
 
-  // Auxiliar para pegar o valor limpo (retorna undefined se estiver vazio)
   function getCleanValue(formData: FormData, key: string): string | undefined {
     const val = formData.get(key) as string;
     return val && val.trim() !== "" ? val.trim() : undefined;
@@ -64,10 +63,9 @@ export function AuditFilters({ onSearch, onClear }: Props) {
         <option value="CREATE">Criação</option>
         <option value="UPDATE">Atualização</option>
         <option value="DELETE">Exclusão</option>
-        <option value="DEACTIVATE">Desativação</option>
       </select>
 
-      {/* ENTIDADE (AGORA EM PORTUGUÊS) */}
+      {/* ENTIDADE */}
       <select
         name="entidade"
         className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
@@ -116,3 +114,4 @@ export function AuditFilters({ onSearch, onClear }: Props) {
     </form>
   );
 }
+
