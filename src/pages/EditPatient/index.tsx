@@ -36,7 +36,7 @@ import type {
 import { Button } from "../../components/ui/Button";
 
 const EMPTY_FORM = {
-  // IdentificaÃ§Ã£o
+  // Identificação
   nome: "",
   dataNascimento: "",
   cpf: "",
@@ -48,7 +48,7 @@ const EMPTY_FORM = {
   quartoLeito: "",
   genero: "" as GenderType | "",
 
-  // ResponsÃ¡vel
+  // Responsável
   responsavel: "",
   telefone: "",
   responsavelCpf: "",
@@ -56,7 +56,7 @@ const EMPTY_FORM = {
   responsavelEmail: "",
   responsavelEndereco: "",
 
-  // SaÃºde
+  // Saúde
   tipoSanguineo: "" as BloodTypeType | "",
   planoSaude: "",
   contatoEmergencia: "",
@@ -67,7 +67,7 @@ const EMPTY_FORM = {
   restricaoAlimentar: "",
   observacoes: "",
 
-  // InternaÃ§Ã£o
+  // Internação
   dataInternacao: "",
   dataAlta: "",
 };
@@ -99,10 +99,7 @@ export function EditPatient() {
   const [formData, setFormData] =
     useState<PatientFormData>(EMPTY_FORM);
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // Atualiza um campo do formulÃ¡rio
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
+  // Atualiza um campo do formulário
   function handleChange(
     field: keyof PatientFormData,
     value: string
@@ -113,14 +110,11 @@ export function EditPatient() {
     }));
   }
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // Carrega paciente
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
   useEffect(() => {
     async function loadPatient() {
       if (!id) {
-        setErrorMessage("Paciente nÃ£o identificado.");
+        setErrorMessage("Paciente não identificado.");
         setLoading(false);
         return;
       }
@@ -132,7 +126,7 @@ export function EditPatient() {
         const patient = await getPatient(id);
 
         setFormData({
-          // IdentificaÃ§Ã£o
+          // Identificação
           nome: patient.nome ?? "",
 
           dataNascimento: formatDateForInput(
@@ -167,7 +161,7 @@ export function EditPatient() {
             patient.genero
           ),
 
-          // ResponsÃ¡vel
+          // Responsável
           responsavel: patient.responsavel ?? "",
 
           telefone: patient.telefone ?? "",
@@ -190,7 +184,7 @@ export function EditPatient() {
               patient.responsavelEndereco
             ),
 
-          // SaÃºde
+          // Saúde
           tipoSanguineo: valueOrEmpty(
             patient.tipoSanguineo
           ),
@@ -233,7 +227,7 @@ export function EditPatient() {
               patient.observacoes
             ),
 
-          // InternaÃ§Ã£o
+          // Internação
           dataInternacao:
             formatDateForInput(
               patient.dataInternacao
@@ -253,11 +247,11 @@ export function EditPatient() {
         if (error instanceof AxiosError) {
           setErrorMessage(
             error.response?.data?.error ??
-              "NÃ£o foi possÃ­vel carregar os dados do residente."
+              "Não foi possível carregar os dados do residente."
           );
         } else {
           setErrorMessage(
-            "NÃ£o foi possÃ­vel carregar os dados do residente."
+            "Não foi possível carregar os dados do residente."
           );
         }
       } finally {
@@ -268,10 +262,7 @@ export function EditPatient() {
     loadPatient();
   }, [id]);
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // Salvar alteraÃ§Ãµes
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
+  // Salvar alterações
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>
   ) {
@@ -279,7 +270,7 @@ export function EditPatient() {
 
     if (!id) {
       setErrorMessage(
-        "Paciente nÃ£o identificado."
+        "Paciente não identificado."
       );
       return;
     }
@@ -295,7 +286,7 @@ export function EditPatient() {
       !formData.telefone.trim()
     ) {
       setErrorMessage(
-        "Preencha todos os campos obrigatÃ³rios (*)."
+        "Preencha todos os campos obrigatórios (*)."
       );
       return;
     }
@@ -304,7 +295,7 @@ export function EditPatient() {
       setSaving(true);
 
       const payload: Partial<Patient> = {
-        // IdentificaÃ§Ã£o
+        // Identificação
         nome: formData.nome.trim(),
 
         dataNascimento:
@@ -341,7 +332,7 @@ export function EditPatient() {
         genero:
           formData.genero as GenderType,
 
-        // ResponsÃ¡vel
+        // Responsável
         responsavel:
           formData.responsavel.trim(),
 
@@ -366,7 +357,7 @@ export function EditPatient() {
           formData.responsavelEndereco.trim() ||
           undefined,
 
-        // SaÃºde
+        // Saúde
         tipoSanguineo:
           formData.tipoSanguineo ||
           undefined,
@@ -403,7 +394,7 @@ export function EditPatient() {
           formData.observacoes.trim() ||
           undefined,
 
-        // InternaÃ§Ã£o
+        // Internação
         dataInternacao:
           formData.dataInternacao ||
           undefined,
@@ -416,7 +407,7 @@ export function EditPatient() {
       await updatePatient(id, payload);
 
       setSuccessMessage(
-        "ProntuÃ¡rio do residente atualizado com sucesso!"
+        "Prontuário do residente atualizado com sucesso!"
       );
 
       setTimeout(() => {
@@ -431,11 +422,11 @@ export function EditPatient() {
       if (error instanceof AxiosError) {
         setErrorMessage(
           error.response?.data?.error ??
-            "Erro ao salvar as alteraÃ§Ãµes."
+            "Erro ao salvar as alterações."
         );
       } else {
         setErrorMessage(
-          "Erro ao salvar as alteraÃ§Ãµes. Tente novamente."
+          "Erro ao salvar as alterações. Tente novamente."
         );
       }
     } finally {
@@ -443,10 +434,7 @@ export function EditPatient() {
     }
   }
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // Loading
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
   if (loading) {
     return (
       <div className="flex h-96 items-center justify-center">
@@ -461,18 +449,12 @@ export function EditPatient() {
     );
   }
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // Tela
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
   return (
     <div className="mx-auto max-w-5xl space-y-6 pb-12">
-
-      {/* CabeÃ§alho */}
-
+      {/* Cabeçalho */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-
           <Link
             to={`/patients/${id}`}
             className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-800"
@@ -482,20 +464,18 @@ export function EditPatient() {
 
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">
-              Editar ProntuÃ¡rio
+              Editar Prontuário
             </h1>
 
             <p className="text-xs font-medium text-slate-500">
-              Atualize as informaÃ§Ãµes cadastrais,
-              familiares e de saÃºde do residente.
+              Atualize as informações cadastrais,
+              familiares e de saúde do residente.
             </p>
           </div>
-
         </div>
       </div>
 
       {/* Erro */}
-
       {errorMessage && (
         <div className="flex items-center gap-2.5 rounded-xl border border-rose-200 bg-rose-50/70 p-4 text-xs font-medium text-rose-800">
           <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
@@ -505,7 +485,6 @@ export function EditPatient() {
       )}
 
       {/* Sucesso */}
-
       {successMessage && (
         <div className="flex items-center gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 text-xs font-medium text-emerald-800">
           <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
@@ -518,23 +497,19 @@ export function EditPatient() {
         onSubmit={handleSubmit}
         className="space-y-6 text-xs text-slate-700"
       >
-
-        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-            1. IDENTIFICAÃ‡ÃƒO
-        â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+        {/* ============================================================
+            1. IDENTIFICAÇÃO
+        ============================================================ */}
 
         <section className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
-
           <h2 className="flex items-center gap-2 border-b border-slate-100 pb-3 text-xs font-bold uppercase tracking-wider text-emerald-700">
             <User className="h-4 w-4" />
 
-            1. IdentificaÃ§Ã£o e AcomodaÃ§Ã£o
+            1. Identificação e Acomodação
           </h2>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-
             {/* Nome */}
-
             <div>
               <label className="block font-semibold">
                 Nome Completo{" "}
@@ -556,7 +531,6 @@ export function EditPatient() {
             </div>
 
             {/* Data nascimento */}
-
             <div>
               <label className="block font-semibold">
                 Data de Nascimento{" "}
@@ -580,7 +554,6 @@ export function EditPatient() {
             </div>
 
             {/* CPF */}
-
             <div>
               <label className="block font-semibold">
                 CPF
@@ -589,7 +562,7 @@ export function EditPatient() {
               <input
                 type="text"
                 maxLength={14}
-                placeholder="Apenas nÃºmeros"
+                placeholder="Apenas números"
                 value={formData.cpf}
                 onChange={(e) =>
                   handleChange(
@@ -602,7 +575,6 @@ export function EditPatient() {
             </div>
 
             {/* RG */}
-
             <div>
               <label className="block font-semibold">
                 RG
@@ -622,7 +594,6 @@ export function EditPatient() {
             </div>
 
             {/* Naturalidade */}
-
             <div>
               <label className="block font-semibold">
                 Naturalidade
@@ -645,7 +616,6 @@ export function EditPatient() {
             </div>
 
             {/* Estado civil */}
-
             <div>
               <label className="block font-semibold">
                 Estado Civil
@@ -662,7 +632,7 @@ export function EditPatient() {
                 className="input"
               >
                 <option value="">
-                  NÃ£o informado
+                  Não informado
                 </option>
 
                 <option value={MaritalStatus.SOLTEIRO}>
@@ -678,20 +648,19 @@ export function EditPatient() {
                 </option>
 
                 <option value={MaritalStatus.VIUVO}>
-                  ViÃºvo(a)
+                  Viúvo(a)
                 </option>
 
                 <option value={MaritalStatus.UNIAO_ESTAVEL}>
-                  UniÃ£o EstÃ¡vel
+                  União Estável
                 </option>
               </select>
             </div>
 
-            {/* CartÃ£o SUS */}
-
+            {/* Cartão SUS */}
             <div>
               <label className="block font-semibold">
-                CartÃ£o SUS
+                Cartão SUS
               </label>
 
               <input
@@ -710,7 +679,6 @@ export function EditPatient() {
             </div>
 
             {/* Quarto */}
-
             <div>
               <label className="block font-semibold">
                 Quarto / Leito
@@ -732,11 +700,10 @@ export function EditPatient() {
               />
             </div>
 
-            {/* GÃªnero */}
-
+            {/* Gênero */}
             <div>
               <label className="block font-semibold">
-                GÃªnero{" "}
+                Gênero{" "}
                 <span className="text-rose-500">*</span>
               </label>
 
@@ -768,27 +735,24 @@ export function EditPatient() {
                 </option>
               </select>
             </div>
-
           </div>
         </section>
 
-        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-            2. RESPONSÃVEL
-        â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+        {/* ============================================================
+            2. RESPONSÁVEL
+        ============================================================ */}
 
         <section className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
-
           <h2 className="flex items-center gap-2 border-b border-slate-100 pb-3 text-xs font-bold uppercase tracking-wider text-emerald-700">
             <ShieldCheck className="h-4 w-4" />
 
-            2. ResponsÃ¡vel Legal / Familiar
+            2. Responsável Legal / Familiar
           </h2>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-
             <div>
               <label className="block font-semibold">
-                Nome do ResponsÃ¡vel{" "}
+                Nome do Responsável{" "}
                 <span className="text-rose-500">*</span>
               </label>
 
@@ -833,7 +797,7 @@ export function EditPatient() {
 
             <div>
               <label className="block font-semibold">
-                CPF do ResponsÃ¡vel
+                CPF do Responsável
               </label>
 
               <input
@@ -875,7 +839,7 @@ export function EditPatient() {
 
             <div className="md:col-span-2">
               <label className="block font-semibold">
-                E-mail do ResponsÃ¡vel
+                E-mail do Responsável
               </label>
 
               <input
@@ -895,12 +859,12 @@ export function EditPatient() {
 
             <div className="md:col-span-2">
               <label className="block font-semibold">
-                EndereÃ§o do ResponsÃ¡vel
+                Endereço do Responsável
               </label>
 
               <input
                 type="text"
-                placeholder="EndereÃ§o completo"
+                placeholder="Endereço completo"
                 value={
                   formData.responsavelEndereco
                 }
@@ -913,29 +877,25 @@ export function EditPatient() {
                 className="input"
               />
             </div>
-
           </div>
         </section>
 
-        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-            3. SAÃšDE
-        â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+        {/* ============================================================
+            3. SAÚDE
+        ============================================================ */}
 
         <section className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
-
           <h2 className="flex items-center gap-2 border-b border-slate-100 pb-3 text-xs font-bold uppercase tracking-wider text-emerald-700">
             <HeartPulse className="h-4 w-4" />
 
-            3. SaÃºde e EmergÃªncia
+            3. Saúde e Emergência
           </h2>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-
-            {/* DependÃªncia */}
-
+            {/* Dependência */}
             <div>
               <label className="block font-semibold">
-                Grau de DependÃªncia
+                Grau de Dependência
               </label>
 
               <select
@@ -951,28 +911,27 @@ export function EditPatient() {
                 className="input"
               >
                 <option value="">
-                  NÃ£o informado
+                  Não informado
                 </option>
 
                 <option value={DependencyLevel.INDEPENDENTE}>
-                  Grau I â€” Independente
+                  Grau I — Independente
                 </option>
 
                 <option value={DependencyLevel.PARCIAL}>
-                  Grau II â€” DependÃªncia Parcial
+                  Grau II — Dependência Parcial
                 </option>
 
                 <option value={DependencyLevel.TOTAL}>
-                  Grau III â€” DependÃªncia Total
+                  Grau III — Dependência Total
                 </option>
               </select>
             </div>
 
-            {/* Tipo sanguÃ­neo */}
-
+            {/* Tipo sanguíneo */}
             <div>
               <label className="block font-semibold">
-                Tipo SanguÃ­neo
+                Tipo Sanguíneo
               </label>
 
               <select
@@ -988,7 +947,7 @@ export function EditPatient() {
                 className="input"
               >
                 <option value="">
-                  NÃ£o informado
+                  Não informado
                 </option>
 
                 <option value={BloodType.A_POSITIVO}>
@@ -1026,10 +985,9 @@ export function EditPatient() {
             </div>
 
             {/* Plano */}
-
             <div>
               <label className="block font-semibold">
-                Plano de SaÃºde
+                Plano de Saúde
               </label>
 
               <input
@@ -1047,11 +1005,10 @@ export function EditPatient() {
               />
             </div>
 
-            {/* EmergÃªncia */}
-
+            {/* Emergência */}
             <div>
               <label className="block font-semibold">
-                Contato de EmergÃªncia
+                Contato de Emergência
               </label>
 
               <input
@@ -1070,11 +1027,10 @@ export function EditPatient() {
               />
             </div>
 
-            {/* HistÃ³rico */}
-
+            {/* Histórico */}
             <div className="md:col-span-2">
               <label className="block font-semibold">
-                HistÃ³rico MÃ©dico
+                Histórico Médico
               </label>
 
               <textarea
@@ -1092,11 +1048,10 @@ export function EditPatient() {
               />
             </div>
 
-            {/* DiagnÃ³sticos */}
-
+            {/* Diagnósticos */}
             <div className="md:col-span-2">
               <label className="block font-semibold">
-                DiagnÃ³sticos
+                Diagnósticos
               </label>
 
               <textarea
@@ -1113,16 +1068,14 @@ export function EditPatient() {
                 className="input resize-none"
               />
             </div>
-
           </div>
         </section>
 
-        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-            4. NUTRIÃ‡ÃƒO
-        â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+        {/* ============================================================
+            4. NUTRIÇÃO
+        ============================================================ */}
 
         <section className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
-
           <h2 className="flex items-center gap-2 border-b border-slate-100 pb-3 text-xs font-bold uppercase tracking-wider text-emerald-700">
             <Utensils className="h-4 w-4" />
 
@@ -1130,7 +1083,6 @@ export function EditPatient() {
           </h2>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-
             <div>
               <label className="block font-semibold">
                 Alergias Conhecidas
@@ -1153,7 +1105,7 @@ export function EditPatient() {
 
             <div>
               <label className="block font-semibold">
-                RestriÃ§Ã£o / Dieta Alimentar
+                Restrição / Dieta Alimentar
               </label>
 
               <input
@@ -1173,7 +1125,7 @@ export function EditPatient() {
 
             <div className="md:col-span-2">
               <label className="block font-semibold">
-                ObservaÃ§Ãµes Gerais
+                Observações Gerais
               </label>
 
               <textarea
@@ -1190,27 +1142,24 @@ export function EditPatient() {
                 className="input resize-none"
               />
             </div>
-
           </div>
         </section>
 
-        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-            5. INTERNAÃ‡ÃƒO
-        â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+        {/* ============================================================
+            5. INTERNAÇÃO
+        ============================================================ */}
 
         <section className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
-
           <h2 className="flex items-center gap-2 border-b border-slate-100 pb-3 text-xs font-bold uppercase tracking-wider text-emerald-700">
             <HeartPulse className="h-4 w-4" />
 
-            5. InternaÃ§Ã£o
+            5. Internação
           </h2>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-
             <div>
               <label className="block font-semibold">
-                Data de InternaÃ§Ã£o
+                Data de Internação
               </label>
 
               <input
@@ -1247,14 +1196,11 @@ export function EditPatient() {
                 className="input"
               />
             </div>
-
           </div>
         </section>
 
-        {/* AÃ§Ãµes */}
-
+        {/* Ações */}
         <div className="flex items-center justify-end gap-3 pt-2">
-
           <Button
             type="button"
             variant="outline"
@@ -1282,15 +1228,14 @@ export function EditPatient() {
                 <Save className="h-4 w-4" />
 
                 <span>
-                  Salvar AlteraÃ§Ãµes
+                  Salvar Alterações
                 </span>
               </>
             )}
           </Button>
-
         </div>
-
       </form>
     </div>
   );
 }
+

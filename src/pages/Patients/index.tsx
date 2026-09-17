@@ -19,15 +19,17 @@ import type { Patient } from "../../types/patient";
 import { RegisterPatientModal } from "../../components/RegisterPatientModal";
 
 import { useAuth } from "../../context/useAuth";
-import { Roles } from "../../permissions/roles";
+import { can } from "../../permissions/can";
+import { Permissions } from "../../permissions/permissions";
 
 const ITEMS_PER_PAGE = 6;
 
 export function Patients() {
   const { user } = useAuth();
 
-  const canCreatePatient =
-    user !== null && user.cargo !== Roles.COORDENADOR;
+  const canCreatePatient = user
+    ? can(user.cargo, Permissions.CREATE_PATIENT)
+    : false;
 
   const [patients, setPatients] = useState<Patient[]>([]);
   const [search, setSearch] = useState("");

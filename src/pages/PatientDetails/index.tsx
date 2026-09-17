@@ -45,7 +45,8 @@ import { NewNutritionalAssessmentModal } from "../../components/nutrition/NewNut
 import { getImcClassification } from "../../utils/nutrition";
 
 import { useAuth } from "../../context/useAuth";
-import { Roles } from "../../permissions/roles";
+import { can } from "../../permissions/can";
+import { Permissions } from "../../permissions/permissions";
 
 interface PatientAppointment {
   id: string;
@@ -86,42 +87,20 @@ export function PatientDetails() {
   const { id } = useParams();
   const { user } = useAuth();
 
-  const canManagePatient = user
-    ? ([Roles.COORDENADOR] as string[]).includes(user.cargo)
+  const canEditPatient = user
+    ? can(user.cargo, Permissions.EDIT_PATIENT)
     : false;
 
   const canCreateEvolution = user
-    ? (
-        [
-          Roles.ENFERMEIRO,
-          Roles.MEDICO,
-          Roles.FISIOTERAPEUTA,
-          Roles.NUTRICIONISTA,
-          Roles.PSICOLOGO,
-          Roles.ASSISTENTE_SOCIAL,
-          Roles.TERAPEUTA_OCUPACIONAL,
-          Roles.FONOAUDIOLOGO,
-        ] as string[]
-      ).includes(user.cargo)
+    ? can(user.cargo, Permissions.CREATE_EVOLUTION)
     : false;
 
   const canManageVitalSigns = user
-    ? (
-        [
-          Roles.ENFERMEIRO,
-          Roles.TECNICO_ENFERMAGEM,
-          Roles.MEDICO,
-        ] as string[]
-      ).includes(user.cargo)
+    ? can(user.cargo, Permissions.CREATE_VITAL_SIGNS)
     : false;
 
   const canManageNutrition = user
-    ? (
-        [
-          Roles.MEDICO,
-          Roles.NUTRICIONISTA,
-        ] as string[]
-      ).includes(user.cargo)
+    ? can(user.cargo, Permissions.CREATE_NUTRITION_ASSESSMENT)
     : false;
 
   const [patient, setPatient] =
@@ -409,7 +388,7 @@ export function PatientDetails() {
               <span>Timeline</span>
             </Link>
 
-            {canManagePatient && (
+            {canEditPatient && (
               <Link
                 to={`/patients/${patient.id}/edit`}
                 className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition-all hover:bg-emerald-700 active:scale-[0.98]"

@@ -7,7 +7,7 @@ export const Permissions = {
   VIEW_PATIENTS: "view_patients",
   CREATE_PATIENT: "create_patient",
   EDIT_PATIENT: "edit_patient",
-  DELETE_PATIENT: "delete_patient",
+  DELETE_PATIENT: "delete_patient", // No CareHome = desativar/inativar
 
   // =========================
   // EVOLUÇÕES
@@ -69,7 +69,8 @@ export type Permission =
 
 export const rolePermissions: Record<Role, Permission[]> = {
   // =====================================================
-  // ADMIN (TI / Sistema / Infraestrutura)
+  // ADMIN
+  // Administração do sistema
   // =====================================================
   [Roles.ADMIN]: [
     Permissions.MANAGE_USERS,
@@ -78,32 +79,35 @@ export const rolePermissions: Record<Role, Permission[]> = {
 
   // =====================================================
   // COORDENADOR
-  // Operação completa da instituição
+  // Gestão operacional / assistencial
+  //
+  // Pode:
+  // - visualizar pacientes e registros clínicos
+  // - desativar/inativar paciente
+  // - gerenciar agenda
+  // - consultar documentos
+  // - acessar relatórios
+  //
+  // Não pode:
+  // - criar/editar paciente
+  // - criar/editar evolução
+  // - registrar sinais vitais
+  // - criar/editar medicação
+  // - criar/editar nutrição
   // =====================================================
   [Roles.COORDENADOR]: [
     // Pacientes
     Permissions.VIEW_PATIENTS,
-    Permissions.CREATE_PATIENT,
-    Permissions.EDIT_PATIENT,
     Permissions.DELETE_PATIENT,
 
     // Evoluções
     Permissions.VIEW_EVOLUTIONS,
-    Permissions.CREATE_EVOLUTION,
-    Permissions.EDIT_EVOLUTION,
-    Permissions.DELETE_EVOLUTION,
 
     // Sinais vitais
     Permissions.VIEW_VITAL_SIGNS,
-    Permissions.CREATE_VITAL_SIGNS,
-    Permissions.EDIT_VITAL_SIGNS,
-    Permissions.DELETE_VITAL_SIGNS,
 
     // Medicamentos
     Permissions.VIEW_MEDICATIONS,
-    Permissions.CREATE_MEDICATION,
-    Permissions.EDIT_MEDICATION,
-    Permissions.DELETE_MEDICATION,
 
     // Documentos
     Permissions.VIEW_DOCUMENTS,
@@ -119,59 +123,6 @@ export const rolePermissions: Record<Role, Permission[]> = {
 
     // Nutrição
     Permissions.VIEW_NUTRITION_ASSESSMENT,
-    Permissions.CREATE_NUTRITION_ASSESSMENT,
-    Permissions.EDIT_NUTRITION_ASSESSMENT,
-    Permissions.DELETE_NUTRITION_ASSESSMENT,
-
-    // Relatórios
-    Permissions.VIEW_REPORTS,
-  ],
-
-  // =====================================================
-  // ASSISTENTE SOCIAL (Mesmos privilégios da Coordenação)
-  // =====================================================
-  [Roles.ASSISTENTE_SOCIAL]: [
-    // Pacientes
-    Permissions.VIEW_PATIENTS,
-    Permissions.CREATE_PATIENT,
-    Permissions.EDIT_PATIENT,
-    Permissions.DELETE_PATIENT,
-
-    // Evoluções
-    Permissions.VIEW_EVOLUTIONS,
-    Permissions.CREATE_EVOLUTION,
-    Permissions.EDIT_EVOLUTION,
-    Permissions.DELETE_EVOLUTION,
-
-    // Sinais vitais
-    Permissions.VIEW_VITAL_SIGNS,
-    Permissions.CREATE_VITAL_SIGNS,
-    Permissions.EDIT_VITAL_SIGNS,
-    Permissions.DELETE_VITAL_SIGNS,
-
-    // Medicamentos
-    Permissions.VIEW_MEDICATIONS,
-    Permissions.CREATE_MEDICATION,
-    Permissions.EDIT_MEDICATION,
-    Permissions.DELETE_MEDICATION,
-
-    // Documentos
-    Permissions.VIEW_DOCUMENTS,
-    Permissions.UPLOAD_DOCUMENTS,
-    Permissions.DELETE_DOCUMENTS,
-
-    // Agenda
-    Permissions.VIEW_APPOINTMENTS,
-    Permissions.CREATE_APPOINTMENTS,
-    Permissions.EDIT_APPOINTMENTS,
-    Permissions.DELETE_APPOINTMENTS,
-    Permissions.CANCEL_APPOINTMENTS,
-
-    // Nutrição
-    Permissions.VIEW_NUTRITION_ASSESSMENT,
-    Permissions.CREATE_NUTRITION_ASSESSMENT,
-    Permissions.EDIT_NUTRITION_ASSESSMENT,
-    Permissions.DELETE_NUTRITION_ASSESSMENT,
 
     // Relatórios
     Permissions.VIEW_REPORTS,
@@ -181,26 +132,36 @@ export const rolePermissions: Record<Role, Permission[]> = {
   // ENFERMEIRO
   // =====================================================
   [Roles.ENFERMEIRO]: [
+    // Pacientes
     Permissions.VIEW_PATIENTS,
     Permissions.EDIT_PATIENT,
 
+    // Evoluções
     Permissions.VIEW_EVOLUTIONS,
     Permissions.CREATE_EVOLUTION,
     Permissions.EDIT_EVOLUTION,
 
+    // Sinais vitais
     Permissions.VIEW_VITAL_SIGNS,
     Permissions.CREATE_VITAL_SIGNS,
     Permissions.EDIT_VITAL_SIGNS,
 
+    // Medicamentos
     Permissions.VIEW_MEDICATIONS,
     Permissions.CREATE_MEDICATION,
     Permissions.EDIT_MEDICATION,
 
+    // Documentos
     Permissions.VIEW_DOCUMENTS,
     Permissions.UPLOAD_DOCUMENTS,
 
+    // Agenda
     Permissions.VIEW_APPOINTMENTS,
+
+    // Nutrição
     Permissions.VIEW_NUTRITION_ASSESSMENT,
+
+    // Relatórios
     Permissions.VIEW_REPORTS,
   ],
 
@@ -208,43 +169,63 @@ export const rolePermissions: Record<Role, Permission[]> = {
   // TÉCNICO DE ENFERMAGEM
   // =====================================================
   [Roles.TECNICO_ENFERMAGEM]: [
+    // Pacientes
     Permissions.VIEW_PATIENTS,
 
+    // Sinais vitais
     Permissions.VIEW_VITAL_SIGNS,
     Permissions.CREATE_VITAL_SIGNS,
     Permissions.EDIT_VITAL_SIGNS,
 
+    // Medicamentos
     Permissions.VIEW_MEDICATIONS,
+
+    // Documentos
     Permissions.VIEW_DOCUMENTS,
+
+    // Agenda
     Permissions.VIEW_APPOINTMENTS,
+
+    // Relatórios
+    Permissions.VIEW_REPORTS,
   ],
 
   // =====================================================
   // MÉDICO
   // =====================================================
   [Roles.MEDICO]: [
+    // Pacientes
     Permissions.VIEW_PATIENTS,
     Permissions.EDIT_PATIENT,
 
+    // Evoluções
     Permissions.VIEW_EVOLUTIONS,
     Permissions.CREATE_EVOLUTION,
     Permissions.EDIT_EVOLUTION,
 
+    // Sinais vitais
     Permissions.VIEW_VITAL_SIGNS,
     Permissions.CREATE_VITAL_SIGNS,
     Permissions.EDIT_VITAL_SIGNS,
 
+    // Medicamentos
     Permissions.VIEW_MEDICATIONS,
     Permissions.CREATE_MEDICATION,
     Permissions.EDIT_MEDICATION,
 
+    // Documentos
     Permissions.VIEW_DOCUMENTS,
     Permissions.UPLOAD_DOCUMENTS,
 
+    // Agenda
     Permissions.VIEW_APPOINTMENTS,
+
+    // Nutrição
     Permissions.VIEW_NUTRITION_ASSESSMENT,
     Permissions.CREATE_NUTRITION_ASSESSMENT,
     Permissions.EDIT_NUTRITION_ASSESSMENT,
+
+    // Relatórios
     Permissions.VIEW_REPORTS,
   ],
 
@@ -263,6 +244,8 @@ export const rolePermissions: Record<Role, Permission[]> = {
     Permissions.VIEW_DOCUMENTS,
     Permissions.VIEW_APPOINTMENTS,
     Permissions.VIEW_NUTRITION_ASSESSMENT,
+
+    Permissions.VIEW_REPORTS,
   ],
 
   // =====================================================
@@ -278,12 +261,13 @@ export const rolePermissions: Record<Role, Permission[]> = {
     Permissions.VIEW_VITAL_SIGNS,
     Permissions.VIEW_MEDICATIONS,
     Permissions.VIEW_DOCUMENTS,
+    Permissions.VIEW_APPOINTMENTS,
 
     Permissions.VIEW_NUTRITION_ASSESSMENT,
     Permissions.CREATE_NUTRITION_ASSESSMENT,
     Permissions.EDIT_NUTRITION_ASSESSMENT,
 
-    Permissions.VIEW_APPOINTMENTS,
+    Permissions.VIEW_REPORTS,
   ],
 
   // =====================================================
@@ -301,6 +285,27 @@ export const rolePermissions: Record<Role, Permission[]> = {
     Permissions.VIEW_DOCUMENTS,
     Permissions.VIEW_APPOINTMENTS,
     Permissions.VIEW_NUTRITION_ASSESSMENT,
+
+    Permissions.VIEW_REPORTS,
+  ],
+
+  // =====================================================
+  // ASSISTENTE SOCIAL
+  // =====================================================
+  [Roles.ASSISTENTE_SOCIAL]: [
+    Permissions.VIEW_PATIENTS,
+
+    Permissions.VIEW_EVOLUTIONS,
+    Permissions.CREATE_EVOLUTION,
+    Permissions.EDIT_EVOLUTION,
+
+    Permissions.VIEW_VITAL_SIGNS,
+    Permissions.VIEW_MEDICATIONS,
+    Permissions.VIEW_DOCUMENTS,
+    Permissions.VIEW_APPOINTMENTS,
+    Permissions.VIEW_NUTRITION_ASSESSMENT,
+
+    Permissions.VIEW_REPORTS,
   ],
 
   // =====================================================
@@ -318,6 +323,8 @@ export const rolePermissions: Record<Role, Permission[]> = {
     Permissions.VIEW_DOCUMENTS,
     Permissions.VIEW_APPOINTMENTS,
     Permissions.VIEW_NUTRITION_ASSESSMENT,
+
+    Permissions.VIEW_REPORTS,
   ],
 
   // =====================================================
@@ -335,22 +342,28 @@ export const rolePermissions: Record<Role, Permission[]> = {
     Permissions.VIEW_DOCUMENTS,
     Permissions.VIEW_APPOINTMENTS,
     Permissions.VIEW_NUTRITION_ASSESSMENT,
+
+    Permissions.VIEW_REPORTS,
   ],
 
   // =====================================================
   // RECEPÇÃO
   // =====================================================
   [Roles.RECEPCAO]: [
+    // Pacientes
     Permissions.VIEW_PATIENTS,
     Permissions.CREATE_PATIENT,
     Permissions.EDIT_PATIENT,
 
+    // Agenda
     Permissions.VIEW_APPOINTMENTS,
     Permissions.CREATE_APPOINTMENTS,
     Permissions.EDIT_APPOINTMENTS,
     Permissions.CANCEL_APPOINTMENTS,
 
+    // Documentos
     Permissions.VIEW_DOCUMENTS,
     Permissions.UPLOAD_DOCUMENTS,
   ],
 };
+

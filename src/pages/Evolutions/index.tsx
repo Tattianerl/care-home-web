@@ -12,9 +12,9 @@ import { api } from "../../services/api";
 
 import type { Evolution } from "../../types/evolution";
 
-// 👇 Importando autenticação e roles
 import { useAuth } from "../../context/useAuth";
-import { Roles } from "../../permissions/roles";
+import { can } from "../../permissions/can";
+import { Permissions } from "../../permissions/permissions";
 
 interface ProfessionalOption {
   id: string;
@@ -24,9 +24,10 @@ interface ProfessionalOption {
 export function Evolutions() {
   const { user } = useAuth();
 
-  // 👇 Apenas equipe clínica, coordenação e serviço social podem excluir evoluções
-  const canManageEvolutions = user
-    ? ([Roles.COORDENADOR, Roles.MEDICO, Roles.ENFERMEIRO, Roles.ASSISTENTE_SOCIAL] as string[]).includes(user.cargo)
+  // Usa a matriz central de permissões.
+  // O COORDENADOR pode visualizar evoluções, mas não excluí-las.
+  const canDeleteEvolution = user
+    ? can(user.cargo, Permissions.DELETE_EVOLUTION)
     : false;
 
   const [evolutions, setEvolutions] = useState<Evolution[]>([]);
@@ -43,13 +44,14 @@ export function Evolutions() {
   useEffect(() => {
     async function loadProfessionals() {
       try {
-        const response = await api.get("/users"); 
+        const response = await api.get("/users");
         const data = response.data.users || response.data;
-        
+
         const formatted = data.map((user: { id: string; nome: string }) => ({
           id: user.id,
           nome: user.nome,
         }));
+
         setProfessionals(formatted);
       } catch (error) {
         console.error("Erro ao carregar profissionais para o filtro:", error);
@@ -92,7 +94,7 @@ export function Evolutions() {
   }, [professional, startDate, endDate]);
 
   async function handleDelete(id: string) {
-    if (!canManageEvolutions) return;
+    if (!canDeleteEvolution) return;
 
     const confirmed = window.confirm(
       "Deseja excluir esta evolução?"
@@ -123,7 +125,8 @@ export function Evolutions() {
     setEndDate("");
   }
 
-  // 3. Filtro local para o campo de texto livre (busca por paciente, descrição ou profissional)
+  // 3. Filtro local para o campo de texto livre
+  // (busca por paciente, descrição ou profissional)
   const filteredEvolutions = useMemo(() => {
     const term = search.toLowerCase();
 
@@ -144,10 +147,12 @@ export function Evolutions() {
     <div className="space-y-6">
       <div className="flex items-center gap-2">
         <FileText className="h-7 w-7 text-emerald-600" />
+
         <div>
           <h1 className="text-3xl font-bold">
             Todas as Evoluções
           </h1>
+
           <p className="mt-1 text-sm text-slate-500">
             Histórico completo das evoluções registradas.
           </p>
@@ -180,8 +185,7 @@ export function Evolutions() {
               key={evolution.id}
               evolution={evolution}
               deleting={deletingId === evolution.id}
-              // Se tiver permissão executa a exclusão, senão passa função vazia para ocultar/desativar
-              onDelete={canManageEvolutions ? handleDelete : () => {}}
+              onDelete={canDeleteEvolution ? handleDelete : () => {}}
             />
           ))}
         </div>
@@ -189,3 +193,4 @@ export function Evolutions() {
     </div>
   );
 }
+
