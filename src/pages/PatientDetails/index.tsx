@@ -103,6 +103,39 @@ export function PatientDetails() {
     ? can(user.cargo, Permissions.CREATE_NUTRITION_ASSESSMENT)
     : false;
 
+  const canViewEvolutions = user
+    ? can(user.cargo, Permissions.VIEW_EVOLUTIONS)
+    : false;
+
+  const canViewVitalSigns = user
+    ? can(user.cargo, Permissions.VIEW_VITAL_SIGNS)
+    : false;
+
+  const canViewMedications = user
+    ? can(user.cargo, Permissions.VIEW_MEDICATIONS)
+    : false;
+
+  const canViewNutrition = user
+    ? can(user.cargo, Permissions.VIEW_NUTRITION_ASSESSMENT)
+    : false;
+
+  const canViewDocuments = user
+    ? can(user.cargo, Permissions.VIEW_DOCUMENTS)
+    : false;
+
+  const canViewAppointments = user
+    ? can(user.cargo, Permissions.VIEW_APPOINTMENTS)
+    : false;
+
+  const canViewClinicalInfo =
+    canViewEvolutions ||
+    canViewVitalSigns ||
+    canViewMedications ||
+    canViewNutrition;
+
+  const canViewTimeline =
+    canViewClinicalInfo || canViewAppointments;
+
   const [patient, setPatient] =
     useState<PatientDetails | null>(null);
 
@@ -133,25 +166,36 @@ export function PatientDetails() {
     try {
       setLoading(true);
 
+      const patientRequest = getPatient(id);
+
+      const appointmentsRequest = canViewAppointments
+        ? api
+            .get(`/patients/${id}/appointments`)
+            .catch(() => ({ data: [] }))
+        : Promise.resolve({ data: [] });
+
+      const vitalSignsRequest = canViewVitalSigns
+        ? api
+            .get(`/patients/${id}/vital-signs`)
+            .catch(() => ({ data: [] }))
+        : Promise.resolve({ data: [] });
+
+      const nutritionRequest = canViewNutrition
+        ? nutritionService
+            .listByPatient(id)
+            .catch(() => [])
+        : Promise.resolve([]);
+
       const [
         patientData,
         appointmentsResponse,
         vitalSignsResponse,
         nutritionResponse,
       ] = await Promise.all([
-        getPatient(id),
-
-        api
-          .get(`/patients/${id}/appointments`)
-          .catch(() => ({ data: [] })),
-
-        api
-          .get(`/patients/${id}/vital-signs`)
-          .catch(() => ({ data: [] })),
-
-        nutritionService
-          .listByPatient(id)
-          .catch(() => []),
+        patientRequest,
+        appointmentsRequest,
+        vitalSignsRequest,
+        nutritionRequest,
       ]);
 
       setPatient(patientData);
@@ -181,7 +225,12 @@ export function PatientDetails() {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [
+    id,
+    canViewAppointments,
+    canViewVitalSigns,
+    canViewNutrition,
+  ]);
 
   useEffect(() => {
     loadPatientData();
@@ -380,13 +429,15 @@ export function PatientDetails() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <Link
-              to={`/patients/${patient.id}/timeline`}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-xs transition-all hover:bg-slate-50"
-            >
-              <Clock className="h-4 w-4 text-indigo-600" />
-              <span>Timeline</span>
-            </Link>
+            {canViewTimeline && (
+              <Link
+                to={`/patients/${patient.id}/timeline`}
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-xs transition-all hover:bg-slate-50"
+              >
+                <Clock className="h-4 w-4 text-indigo-600" />
+                <span>Timeline</span>
+              </Link>
+            )}
 
             {canEditPatient && (
               <Link
@@ -582,123 +633,125 @@ export function PatientDetails() {
       </div>
 
       {/* SAÚDE */}
-      <section className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
-        <h2 className="flex items-center gap-2 border-b border-slate-100 pb-3 text-sm font-bold uppercase tracking-wider text-slate-800">
-          <HeartPulse className="h-4 w-4 text-emerald-600" />
-          Saúde e Informações Clínicas
-        </h2>
+      {canViewClinicalInfo && (
+        <section className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
+          <h2 className="flex items-center gap-2 border-b border-slate-100 pb-3 text-sm font-bold uppercase tracking-wider text-slate-800">
+            <HeartPulse className="h-4 w-4 text-emerald-600" />
+            Saúde e Informações Clínicas
+          </h2>
 
-        <div className="grid grid-cols-1 gap-4 text-xs sm:grid-cols-2 lg:grid-cols-4">
-          <div>
-            <span className="block font-semibold uppercase text-slate-400">
-              Tipo Sanguíneo
-            </span>
+          <div className="grid grid-cols-1 gap-4 text-xs sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <span className="block font-semibold uppercase text-slate-400">
+                Tipo Sanguíneo
+              </span>
 
-            <span className="text-sm font-bold text-slate-800">
-              {getBloodTypeLabel(
-                patient.tipoSanguineo
-              )}
-            </span>
-          </div>
+              <span className="text-sm font-bold text-slate-800">
+                {getBloodTypeLabel(
+                  patient.tipoSanguineo
+                )}
+              </span>
+            </div>
 
-          <div>
-            <span className="block font-semibold uppercase text-slate-400">
-              Grau de Dependência
-            </span>
+            <div>
+              <span className="block font-semibold uppercase text-slate-400">
+                Grau de Dependência
+              </span>
 
-            <span className="text-sm font-medium text-slate-800">
-              {getDependencyLabel(
-                patient.grauDependencia
-              )}
-            </span>
-          </div>
+              <span className="text-sm font-medium text-slate-800">
+                {getDependencyLabel(
+                  patient.grauDependencia
+                )}
+              </span>
+            </div>
 
-          <div>
-            <span className="block font-semibold uppercase text-slate-400">
-              Plano de Saúde
-            </span>
+            <div>
+              <span className="block font-semibold uppercase text-slate-400">
+                Plano de Saúde
+              </span>
 
-            <span className="text-sm font-medium text-slate-800">
-              {patient.planoSaude || "Não informado"}
-            </span>
-          </div>
+              <span className="text-sm font-medium text-slate-800">
+                {patient.planoSaude || "Não informado"}
+              </span>
+            </div>
 
-          <div>
-            <span className="block font-semibold uppercase text-slate-400">
-              Emergência
-            </span>
+            <div>
+              <span className="block font-semibold uppercase text-slate-400">
+                Emergência
+              </span>
 
-            <span className="text-sm font-medium text-slate-800">
-              {patient.contatoEmergencia ||
-                "Não informado"}
-            </span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 border-t border-slate-100 pt-4 md:grid-cols-2">
-          <div>
-            <span className="block font-semibold uppercase text-slate-400">
-              Diagnósticos
-            </span>
-
-            <p className="mt-1 whitespace-pre-line text-sm text-slate-700">
-              {patient.diagnosticos ||
-                "Nenhum diagnóstico registrado."}
-            </p>
-          </div>
-
-          <div>
-            <span className="block font-semibold uppercase text-slate-400">
-              Histórico Médico
-            </span>
-
-            <p className="mt-1 whitespace-pre-line text-sm text-slate-700">
-              {patient.historicoMedico ||
-                "Nenhum histórico médico registrado."}
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 border-t border-slate-100 pt-4 md:grid-cols-2">
-          <div>
-            <span className="block font-semibold uppercase text-slate-400">
-              Alergias
-            </span>
-
-            <div className="mt-1 flex items-start gap-1.5 rounded-xl border border-amber-200/60 bg-amber-50 p-2.5 text-xs text-amber-700">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-
-              <span>
-                {patient.alergias ||
-                  "Sem alergias registradas."}
+              <span className="text-sm font-medium text-slate-800">
+                {patient.contatoEmergencia ||
+                  "Não informado"}
               </span>
             </div>
           </div>
 
-          <div>
-            <span className="block font-semibold uppercase text-slate-400">
-              Restrição Alimentar
-            </span>
+          <div className="grid grid-cols-1 gap-4 border-t border-slate-100 pt-4 md:grid-cols-2">
+            <div>
+              <span className="block font-semibold uppercase text-slate-400">
+                Diagnósticos
+              </span>
 
-            <p className="mt-1 rounded-xl border border-slate-100 bg-slate-50 p-2.5 text-sm text-slate-700">
-              {patient.restricaoAlimentar ||
-                "Nenhuma restrição registrada."}
-            </p>
+              <p className="mt-1 whitespace-pre-line text-sm text-slate-700">
+                {patient.diagnosticos ||
+                  "Nenhum diagnóstico registrado."}
+              </p>
+            </div>
+
+            <div>
+              <span className="block font-semibold uppercase text-slate-400">
+                Histórico Médico
+              </span>
+
+              <p className="mt-1 whitespace-pre-line text-sm text-slate-700">
+                {patient.historicoMedico ||
+                  "Nenhum histórico médico registrado."}
+              </p>
+            </div>
           </div>
-        </div>
 
-        {patient.observacoes && (
-          <div className="border-t border-slate-100 pt-4">
-            <span className="block font-semibold uppercase text-slate-400">
-              Observações
-            </span>
+          <div className="grid grid-cols-1 gap-4 border-t border-slate-100 pt-4 md:grid-cols-2">
+            <div>
+              <span className="block font-semibold uppercase text-slate-400">
+                Alergias
+              </span>
 
-            <p className="mt-1 whitespace-pre-line text-sm text-slate-700">
-              {patient.observacoes}
-            </p>
+              <div className="mt-1 flex items-start gap-1.5 rounded-xl border border-amber-200/60 bg-amber-50 p-2.5 text-xs text-amber-700">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+
+                <span>
+                  {patient.alergias ||
+                    "Sem alergias registradas."}
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <span className="block font-semibold uppercase text-slate-400">
+                Restrição Alimentar
+              </span>
+
+              <p className="mt-1 rounded-xl border border-slate-100 bg-slate-50 p-2.5 text-sm text-slate-700">
+                {patient.restricaoAlimentar ||
+                  "Nenhuma restrição registrada."}
+              </p>
+            </div>
           </div>
-        )}
-      </section>
+
+          {patient.observacoes && (
+            <div className="border-t border-slate-100 pt-4">
+              <span className="block font-semibold uppercase text-slate-400">
+                Observações
+              </span>
+
+              <p className="mt-1 whitespace-pre-line text-sm text-slate-700">
+                {patient.observacoes}
+              </p>
+            </div>
+          )}
+        </section>
+      )}
 
       {/* INTERNAÇÃO */}
       <section className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
@@ -753,325 +806,338 @@ export function PatientDetails() {
       </section>
 
       {/* AGENDA */}
-      <section className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-800">
-            <Calendar className="h-4 w-4 text-emerald-600" />
-            Agenda de Consultas e Procedimentos
-          </h2>
-        </div>
-
-        {appointments.length === 0 ? (
-          <p className="py-2 text-xs italic text-slate-400">
-            Nenhum agendamento marcado para este residente.
-          </p>
-        ) : (
-          <div className="divide-y divide-slate-100">
-            {appointments.map((appointment) => (
-              <div
-                key={appointment.id}
-                className="flex items-start justify-between gap-4 py-3.5 first:pt-0 last:pb-0"
-              >
-                <div className="space-y-1">
-                  <p className="text-sm font-bold text-slate-800">
-                    {appointment.titulo}
-                  </p>
-
-                  <p className="flex items-center gap-1 text-xs text-slate-500">
-                    <Clock className="h-3 w-3" />
-
-                    {formatDateTime(
-                      appointment.dataHora
-                    )}
-                  </p>
-
-                  {appointment.observacoes && (
-                    <p className="mt-0.5 text-xs italic text-slate-500">
-                      Obs: {appointment.observacoes}
-                    </p>
-                  )}
-                </div>
-
-                <span
-                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${getAppointmentStatusClass(
-                    appointment.status
-                  )}`}
-                >
-                  {getAppointmentStatusLabel(
-                    appointment.status
-                  )}
-                </span>
-              </div>
-            ))}
+      {canViewAppointments && (
+        <section className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-800">
+              <Calendar className="h-4 w-4 text-emerald-600" />
+              Agenda de Consultas e Procedimentos
+            </h2>
           </div>
-        )}
-      </section>
+
+          {appointments.length === 0 ? (
+            <p className="py-2 text-xs italic text-slate-400">
+              Nenhum agendamento marcado para este residente.
+            </p>
+          ) : (
+            <div className="divide-y divide-slate-100">
+              {appointments.map((appointment) => (
+                <div
+                  key={appointment.id}
+                  className="flex items-start justify-between gap-4 py-3.5 first:pt-0 last:pb-0"
+                >
+                  <div className="space-y-1">
+                    <p className="text-sm font-bold text-slate-800">
+                      {appointment.titulo}
+                    </p>
+
+                    <p className="flex items-center gap-1 text-xs text-slate-500">
+                      <Clock className="h-3 w-3" />
+
+                      {formatDateTime(
+                        appointment.dataHora
+                      )}
+                    </p>
+
+                    {appointment.observacoes && (
+                      <p className="mt-0.5 text-xs italic text-slate-500">
+                        Obs: {appointment.observacoes}
+                      </p>
+                    )}
+                  </div>
+
+                  <span
+                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${getAppointmentStatusClass(
+                      appointment.status
+                    )}`}
+                  >
+                    {getAppointmentStatusLabel(
+                      appointment.status
+                    )}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       {/* SINAIS VITAIS */}
-      <section className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
-        <div className="flex flex-col gap-2 border-b border-slate-100 pb-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-800">
-            <Activity className="h-4 w-4 text-emerald-600" />
-            Sinais Vitais
-          </h2>
-
-          <div className="flex items-center gap-3">
-            <Link
-              to={`/patients/${id}/vital-signs`}
-              className="text-xs font-semibold text-emerald-600 transition-colors hover:text-emerald-700"
-            >
-              Ver Histórico
-            </Link>
-
-            {canManageVitalSigns && (
-              <Link
-                to={`/patients/${id}/vital-signs/new`}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs transition-all hover:bg-emerald-700 active:scale-[0.98]"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                <span>Registrar Sinais</span>
-              </Link>
-            )}
-          </div>
-        </div>
-
-        {latestVital ? (
-          <div className="grid grid-cols-2 gap-3 pt-1 sm:grid-cols-3 lg:grid-cols-6">
-            <VitalCard
-              label="P. Arterial"
-              value={
-                latestVital.pressaoSistolica !== null &&
-                latestVital.pressaoSistolica !== undefined &&
-                latestVital.pressaoDiastolica !== null &&
-                latestVital.pressaoDiastolica !== undefined
-                  ? `${latestVital.pressaoSistolica}/${latestVital.pressaoDiastolica}`
-                  : "--"
-              }
-              unit="mmHg"
-            />
-
-            <VitalCard
-              label="F. Cardíaca"
-              value={
-                latestVital.frequenciaCardiaca ??
-                "--"
-              }
-              unit="bpm"
-            />
-
-            <VitalCard
-              label="F. Respiratória"
-              value={
-                latestVital.frequenciaRespiratoria ??
-                "--"
-              }
-              unit="rpm"
-            />
-
-            <VitalCard
-              label="Saturação O₂"
-              value={
-                latestVital.saturacao != null
-                  ? `${latestVital.saturacao}%`
-                  : "--"
-              }
-            />
-
-            <VitalCard
-              label="Temperatura"
-              value={
-                latestVital.temperatura != null
-                  ? `${latestVital.temperatura}°C`
-                  : "--"
-              }
-            />
-
-            <VitalCard
-              label="Glicemia"
-              value={
-                latestVital.glicemia ?? "--"
-              }
-              unit="mg/dL"
-            />
-          </div>
-        ) : (
-          <p className="py-2 text-xs italic text-slate-400">
-            Nenhum registro de sinais vitais encontrado.
-          </p>
-        )}
-      </section>
-
-      <Link
-        to={`/patients/${patient.id}/medications`}
-        className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-xs transition-all hover:bg-slate-50"
-      >
-        <Pill className="h-4 w-4 text-emerald-600" />
-        <span>Medicamentos</span>
-      </Link>
-
-      {/* NUTRIÇÃO */}
-      <section className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
-        <div className="flex flex-col gap-2 border-b border-slate-100 pb-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-800">
-            <Apple className="h-4 w-4 text-emerald-600" />
-            Avaliação Nutricional & IMC
-          </h2>
-
-          <div className="flex items-center gap-3">
-            <Link
-              to={`/patients/${id}/nutrition`}
-              className="text-xs font-semibold text-emerald-600 transition-colors hover:text-emerald-700"
-            >
-              Ver Histórico Nutricional
-            </Link>
-
-            {canManageNutrition && (
-              <button
-                type="button"
-                onClick={() =>
-                  setIsNutritionModalOpen(true)
-                }
-                className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs transition-all hover:bg-emerald-700 active:scale-[0.98]"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                <span>Nova Avaliação</span>
-              </button>
-            )}
-          </div>
-        </div>
-
-        {latestNutrition ? (
-          <div className="grid grid-cols-1 gap-3 pt-1 sm:grid-cols-3">
-            <NutritionCard
-              icon={<Scale className="h-5 w-5" />}
-              label="Peso Atual"
-              value={`${latestNutrition.peso} kg`}
-            />
-
-            <NutritionCard
-              icon={<Ruler className="h-5 w-5" />}
-              label="Altura"
-              value={`${latestNutrition.altura} m`}
-            />
-
-            <NutritionCard
-              icon={<Activity className="h-5 w-5" />}
-              label="IMC"
-              value={
-                latestNutrition.imc !== null &&
-                latestNutrition.imc !== undefined
-                  ? Number(
-                      latestNutrition.imc
-                    ).toFixed(1)
-                  : "--"
-              }
-              secondary={
-                latestNutrition.imc !== null &&
-                latestNutrition.imc !== undefined
-                  ? getImcClassification(
-                      latestNutrition.imc
-                    )
-                  : undefined
-              }
-            />
-          </div>
-        ) : (
-          <p className="py-2 text-xs italic text-slate-400">
-            Nenhuma avaliação nutricional cadastrada para este residente.
-          </p>
-        )}
-      </section>
-
-      {/* EVOLUÇÕES */}
-      <section className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
-        <div className="flex flex-col gap-2 border-b border-slate-100 pb-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-800">
-            <FileText className="h-4 w-4 text-emerald-600" />
-            Evoluções do Residente
-          </h2>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <Link
-              to={`/patients/${id}/evolutions`}
-              className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50"
-            >
-              <span>Ver Todas</span>
-              <ChevronRight className="h-3.5 w-3.5" />
-            </Link>
-
-            {canCreateEvolution && (
-              <Link
-                to={`/patients/${id}/evolutions/new`}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs transition-colors hover:bg-emerald-700 active:scale-[0.98]"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                <span>Nova Evolução</span>
-              </Link>
-            )}
-          </div>
-        </div>
-
-        {!patient.evolutions ||
-        patient.evolutions.length === 0 ? (
-          <p className="py-2 text-xs italic text-slate-400">
-            Nenhuma evolução registrada recentemente.
-          </p>
-        ) : (
-          <div className="divide-y divide-slate-100">
-            {patient.evolutions.map((evolution) => (
-              <div
-                key={evolution.id}
-                className="space-y-1 py-3.5 first:pt-0 last:pb-0"
-              >
-                <p className="text-xs leading-relaxed text-slate-700">
-                  {evolution.descricao}
-                </p>
-
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-semibold text-slate-400">
-                  <span>
-                    Registrado por:{" "}
-                    {evolution.user?.nome ||
-                      "Usuário não identificado"}
-                  </span>
-
-                  <span>
-                    {formatDateTime(
-                      evolution.createdAt
-                    )}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* DOCUMENTOS */}
-      <section className="flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
-            <FileSpreadsheet className="h-4 w-4" />
-          </div>
-
-          <div>
-            <h2 className="text-sm font-bold text-slate-800">
-              Anexos e Documentos
+      {canViewVitalSigns && (
+        <section className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
+          <div className="flex flex-col gap-2 border-b border-slate-100 pb-3 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-800">
+              <Activity className="h-4 w-4 text-emerald-600" />
+              Sinais Vitais
             </h2>
 
-            <p className="text-xs text-slate-500">
-              Arquivos de exames, receitas e laudos anexados.
-            </p>
-          </div>
-        </div>
+            <div className="flex items-center gap-3">
+              <Link
+                to={`/patients/${id}/vital-signs`}
+                className="text-xs font-semibold text-emerald-600 transition-colors hover:text-emerald-700"
+              >
+                Ver Histórico
+              </Link>
 
+              {canManageVitalSigns && (
+                <Link
+                  to={`/patients/${id}/vital-signs/new`}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs transition-all hover:bg-emerald-700 active:scale-[0.98]"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Registrar Sinais</span>
+                </Link>
+              )}
+            </div>
+          </div>
+
+          {latestVital ? (
+            <div className="grid grid-cols-2 gap-3 pt-1 sm:grid-cols-3 lg:grid-cols-6">
+              <VitalCard
+                label="P. Arterial"
+                value={
+                  latestVital.pressaoSistolica !== null &&
+                  latestVital.pressaoSistolica !== undefined &&
+                  latestVital.pressaoDiastolica !== null &&
+                  latestVital.pressaoDiastolica !== undefined
+                    ? `${latestVital.pressaoSistolica}/${latestVital.pressaoDiastolica}`
+                    : "--"
+                }
+                unit="mmHg"
+              />
+
+              <VitalCard
+                label="F. Cardíaca"
+                value={
+                  latestVital.frequenciaCardiaca ??
+                  "--"
+                }
+                unit="bpm"
+              />
+
+              <VitalCard
+                label="F. Respiratória"
+                value={
+                  latestVital.frequenciaRespiratoria ??
+                  "--"
+                }
+                unit="rpm"
+              />
+
+              <VitalCard
+                label="Saturação O₂"
+                value={
+                  latestVital.saturacao != null
+                    ? `${latestVital.saturacao}%`
+                    : "--"
+                }
+              />
+
+              <VitalCard
+                label="Temperatura"
+                value={
+                  latestVital.temperatura != null
+                    ? `${latestVital.temperatura}°C`
+                    : "--"
+                }
+              />
+
+              <VitalCard
+                label="Glicemia"
+                value={
+                  latestVital.glicemia ?? "--"
+                }
+                unit="mg/dL"
+              />
+            </div>
+          ) : (
+            <p className="py-2 text-xs italic text-slate-400">
+              Nenhum registro de sinais vitais encontrado.
+            </p>
+          )}
+        </section>
+      )}
+
+      {/* MEDICAMENTOS */}
+      {canViewMedications && (
         <Link
-          to={`/patients/${patient.id}/documents`}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition-colors hover:bg-slate-50"
+          to={`/patients/${patient.id}/medications`}
+          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-xs transition-all hover:bg-slate-50"
         >
-          <span>Acessar Pasta</span>
-          <ChevronRight className="h-3.5 w-3.5" />
+          <Pill className="h-4 w-4 text-emerald-600" />
+          <span>Medicamentos</span>
         </Link>
-      </section>
+      )}
+
+      {/* NUTRIÇÃO */}
+      {canViewNutrition && (
+        <section className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
+          <div className="flex flex-col gap-2 border-b border-slate-100 pb-3 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-800">
+              <Apple className="h-4 w-4 text-emerald-600" />
+              Avaliação Nutricional & IMC
+            </h2>
+
+            <div className="flex items-center gap-3">
+              <Link
+                to={`/patients/${id}/nutrition`}
+                className="text-xs font-semibold text-emerald-600 transition-colors hover:text-emerald-700"
+              >
+                Ver Histórico Nutricional
+              </Link>
+
+              {canManageNutrition && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setIsNutritionModalOpen(true)
+                  }
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs transition-all hover:bg-emerald-700 active:scale-[0.98]"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Nova Avaliação</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {latestNutrition ? (
+            <div className="grid grid-cols-1 gap-3 pt-1 sm:grid-cols-3">
+              <NutritionCard
+                icon={<Scale className="h-5 w-5" />}
+                label="Peso Atual"
+                value={`${latestNutrition.peso} kg`}
+              />
+
+              <NutritionCard
+                icon={<Ruler className="h-5 w-5" />}
+                label="Altura"
+                value={`${latestNutrition.altura} m`}
+              />
+
+              <NutritionCard
+                icon={<Activity className="h-5 w-5" />}
+                label="IMC"
+                value={
+                  latestNutrition.imc !== null &&
+                  latestNutrition.imc !== undefined
+                    ? Number(
+                        latestNutrition.imc
+                      ).toFixed(1)
+                    : "--"
+                }
+                secondary={
+                  latestNutrition.imc !== null &&
+                  latestNutrition.imc !== undefined
+                    ? getImcClassification(
+                        latestNutrition.imc
+                      )
+                    : undefined
+                }
+              />
+            </div>
+          ) : (
+            <p className="py-2 text-xs italic text-slate-400">
+              Nenhuma avaliação nutricional cadastrada para este residente.
+            </p>
+          )}
+        </section>
+      )}
+
+      {/* EVOLUÇÕES */}
+      {canViewEvolutions && (
+        <section className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
+          <div className="flex flex-col gap-2 border-b border-slate-100 pb-3 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-800">
+              <FileText className="h-4 w-4 text-emerald-600" />
+              Evoluções do Residente
+            </h2>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                to={`/patients/${id}/evolutions`}
+                className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-xs transition-colors hover:bg-slate-50"
+              >
+                <span>Ver Todas</span>
+                <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
+
+              {canCreateEvolution && (
+                <Link
+                  to={`/patients/${id}/evolutions/new`}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs transition-colors hover:bg-emerald-700 active:scale-[0.98]"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Nova Evolução</span>
+                </Link>
+              )}
+            </div>
+          </div>
+
+          {!patient.evolutions ||
+          patient.evolutions.length === 0 ? (
+            <p className="py-2 text-xs italic text-slate-400">
+              Nenhuma evolução registrada recentemente.
+            </p>
+          ) : (
+            <div className="divide-y divide-slate-100">
+              {patient.evolutions.map((evolution) => (
+                <div
+                  key={evolution.id}
+                  className="space-y-1 py-3.5 first:pt-0 last:pb-0"
+                >
+                  <p className="text-xs leading-relaxed text-slate-700">
+                    {evolution.descricao}
+                  </p>
+
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-semibold text-slate-400">
+                    <span>
+                      Registrado por:{" "}
+                      {evolution.user?.nome ||
+                        "Usuário não identificado"}
+                    </span>
+
+                    <span>
+                      {formatDateTime(
+                        evolution.createdAt
+                      )}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* DOCUMENTOS */}
+      {canViewDocuments && (
+        <section className="flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+              <FileSpreadsheet className="h-4 w-4" />
+            </div>
+
+            <div>
+              <h2 className="text-sm font-bold text-slate-800">
+                Anexos e Documentos
+              </h2>
+
+              <p className="text-xs text-slate-500">
+                Arquivos de exames, receitas e laudos anexados.
+              </p>
+            </div>
+          </div>
+
+          <Link
+            to={`/patients/${patient.id}/documents`}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition-colors hover:bg-slate-50"
+          >
+            <span>Acessar Pasta</span>
+            <ChevronRight className="h-3.5 w-3.5" />
+          </Link>
+        </section>
+      )}
 
       {/* MODAL DE CADASTRO */}
       <RegisterPatientModal
