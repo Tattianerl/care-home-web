@@ -9,6 +9,8 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 import { updateOwnPassword } from "../../services/users";
@@ -17,6 +19,13 @@ export function Perfil() {
   const [senhaAntiga, setSenhaAntiga] = useState("");
   const [novaSenha, setNovaSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
+
+  const [mostrarSenhaAntiga, setMostrarSenhaAntiga] =
+    useState(false);
+  const [mostrarNovaSenha, setMostrarNovaSenha] =
+    useState(false);
+  const [mostrarConfirmarSenha, setMostrarConfirmarSenha] =
+    useState(false);
 
   const [carregando, setCarregando] = useState(false);
   const [mensagem, setMensagem] = useState<{
@@ -47,7 +56,11 @@ export function Perfil() {
 
     try {
       setCarregando(true);
-      await updateOwnPassword({ senhaAntiga, novaSenha });
+
+      await updateOwnPassword({
+        senhaAntiga,
+        novaSenha,
+      });
 
       setMensagem({
         tipo: "sucesso",
@@ -58,17 +71,27 @@ export function Perfil() {
       setSenhaAntiga("");
       setNovaSenha("");
       setConfirmarSenha("");
+
+      setMostrarSenhaAntiga(false);
+      setMostrarNovaSenha(false);
+      setMostrarConfirmarSenha(false);
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
         const mensagemErro =
           error.response?.data?.error ||
           "Erro ao atualizar a senha. Verifique sua senha atual.";
-        setMensagem({ tipo: "erro", texto: mensagemErro });
-      } else {
-        console.error(error);
+
         setMensagem({
           tipo: "erro",
-          texto: "Erro inesperado ao atualizar a senha. Tente novamente.",
+          texto: mensagemErro,
+        });
+      } else {
+        console.error(error);
+
+        setMensagem({
+          tipo: "erro",
+          texto:
+            "Erro inesperado ao atualizar a senha. Tente novamente.",
         });
       }
     } finally {
@@ -83,10 +106,12 @@ export function Perfil() {
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
           <User className="h-5 w-5" />
         </div>
+
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">
             Meu Perfil
           </h1>
+
           <p className="mt-0.5 text-sm text-slate-500">
             Gerencie suas credenciais e configurações de segurança de acesso.
           </p>
@@ -95,8 +120,9 @@ export function Perfil() {
 
       {/* Card de Alteração de Senha */}
       <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs md:p-8">
-        <div className="flex items-center gap-2 border-b border-slate-100 pb-4 mb-6">
+        <div className="mb-6 flex items-center gap-2 border-b border-slate-100 pb-4">
           <ShieldCheck className="h-5 w-5 text-emerald-600" />
+
           <h2 className="text-base font-bold text-slate-800">
             Segurança & Alteração de Senha
           </h2>
@@ -112,10 +138,11 @@ export function Perfil() {
             }`}
           >
             {mensagem.tipo === "sucesso" ? (
-              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 mt-0.5" />
+              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
             ) : (
-              <AlertCircle className="h-4 w-4 shrink-0 text-rose-600 mt-0.5" />
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-600" />
             )}
+
             <span>{mensagem.texto}</span>
           </div>
         )}
@@ -123,62 +150,156 @@ export function Perfil() {
         <form onSubmit={handleAlterarSenha} className="space-y-5">
           {/* Senha Atual */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">
+            <label
+              htmlFor="senha-antiga"
+              className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-600"
+            >
               Senha Atual
             </label>
+
             <div className="relative">
               <KeyRound className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+
               <input
-                type="password"
+                id="senha-antiga"
+                type={mostrarSenhaAntiga ? "text" : "password"}
                 required
                 value={senhaAntiga}
                 onChange={(e) => setSenhaAntiga(e.target.value)}
                 placeholder="Digite sua senha atual"
-                className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-800 placeholder-slate-400 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-12 text-sm text-slate-800 placeholder-slate-400 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
               />
+
+              <button
+                type="button"
+                onClick={() =>
+                  setMostrarSenhaAntiga((prev) => !prev)
+                }
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-600"
+                aria-label={
+                  mostrarSenhaAntiga
+                    ? "Ocultar senha atual"
+                    : "Visualizar senha atual"
+                }
+                title={
+                  mostrarSenhaAntiga
+                    ? "Ocultar senha"
+                    : "Visualizar senha"
+                }
+              >
+                {mostrarSenhaAntiga ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             {/* Nova Senha */}
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">
+              <label
+                htmlFor="nova-senha"
+                className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-600"
+              >
                 Nova Senha
               </label>
+
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+
                 <input
-                  type="password"
+                  id="nova-senha"
+                  type={mostrarNovaSenha ? "text" : "password"}
                   required
                   value={novaSenha}
                   onChange={(e) => setNovaSenha(e.target.value)}
                   placeholder="Mínimo de 8 caracteres"
-                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-800 placeholder-slate-400 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-12 text-sm text-slate-800 placeholder-slate-400 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                 />
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setMostrarNovaSenha((prev) => !prev)
+                  }
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-600"
+                  aria-label={
+                    mostrarNovaSenha
+                      ? "Ocultar nova senha"
+                      : "Visualizar nova senha"
+                  }
+                  title={
+                    mostrarNovaSenha
+                      ? "Ocultar senha"
+                      : "Visualizar senha"
+                  }
+                >
+                  {mostrarNovaSenha ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
               </div>
             </div>
 
             {/* Confirmar Nova Senha */}
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">
+              <label
+                htmlFor="confirmar-senha"
+                className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-600"
+              >
                 Confirmar Nova Senha
               </label>
+
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+
                 <input
-                  type="password"
+                  id="confirmar-senha"
+                  type={
+                    mostrarConfirmarSenha ? "text" : "password"
+                  }
                   required
                   value={confirmarSenha}
-                  onChange={(e) => setConfirmarSenha(e.target.value)}
+                  onChange={(e) =>
+                    setConfirmarSenha(e.target.value)
+                  }
                   placeholder="Repita a nova senha"
-                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-800 placeholder-slate-400 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-12 text-sm text-slate-800 placeholder-slate-400 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                 />
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setMostrarConfirmarSenha((prev) => !prev)
+                  }
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-600"
+                  aria-label={
+                    mostrarConfirmarSenha
+                      ? "Ocultar confirmação da senha"
+                      : "Visualizar confirmação da senha"
+                  }
+                  title={
+                    mostrarConfirmarSenha
+                      ? "Ocultar senha"
+                      : "Visualizar senha"
+                  }
+                >
+                  {mostrarConfirmarSenha ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
               </div>
             </div>
           </div>
 
           {/* Botão de Envio */}
-          <div className="flex justify-end pt-4 border-t border-slate-100">
+          <div className="flex justify-end border-t border-slate-100 pt-4">
             <button
               type="submit"
               disabled={carregando}
@@ -199,3 +320,4 @@ export function Perfil() {
     </div>
   );
 }
+
