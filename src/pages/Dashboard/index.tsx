@@ -23,11 +23,18 @@ import { getDashboardToday } from "../../services/dashboard";
 
 import type { DashboardToday } from "../../types/dashboard";
 
+import { can } from "../../permissions/can";
+import { Permissions } from "../../permissions/permissions";
+
 export function Dashboard() {
   const { user } = useAuth();
 
   const [dashboard, setDashboard] = useState<DashboardToday | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const canManageUsers = user
+    ? can(user.cargo, Permissions.MANAGE_USERS)
+    : false;
 
   useEffect(() => {
     let isMounted = true;
@@ -35,6 +42,7 @@ export function Dashboard() {
     async function fetchInitialData() {
       try {
         const response = await getDashboardToday();
+
         if (isMounted) {
           setDashboard(response);
         }
@@ -71,6 +79,7 @@ export function Dashboard() {
         icon: <UserRoundCheck className="h-5 w-5 text-blue-600" />,
         bgIcon: "bg-blue-50",
         path: "/funcionarios",
+        canNavigate: canManageUsers,
       },
       {
         title: "Atendimentos Hoje",
@@ -115,7 +124,7 @@ export function Dashboard() {
         path: "/documents",
       },
     ];
-  }, [dashboard]);
+  }, [dashboard, canManageUsers]);
 
   if (loading) {
     return <DashboardSkeleton />;
@@ -127,7 +136,11 @@ export function Dashboard() {
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-rose-100 text-rose-600">
           <Activity className="h-6 w-6" />
         </div>
-        <h3 className="text-lg font-semibold text-rose-900">Falha ao carregar dados</h3>
+
+        <h3 className="text-lg font-semibold text-rose-900">
+          Falha ao carregar dados
+        </h3>
+
         <p className="mt-1 text-sm text-rose-600">
           Não foi possível conectar ao servidor. Tente atualizar a página.
         </p>
@@ -143,14 +156,16 @@ export function Dashboard() {
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">
             Olá, <span className="text-emerald-600">{user?.nome}</span> 👋
           </h1>
+
           <p className="mt-1 text-sm text-slate-500">
-            Acompanhe o resumo em tempo real e os indicadores operacionais da instituição.
+            Acompanhe o resumo em tempo real e os indicadores operacionais da
+            instituição.
           </p>
         </div>
 
         <div className="mt-4 flex items-center gap-2 md:mt-0">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
             Sistema Operacional
           </span>
         </div>
@@ -158,29 +173,66 @@ export function Dashboard() {
 
       {/* Grid de Cards KPIs */}
       <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {cards.map((card) => (
-          <Link
-            key={card.title}
-            to={card.path}
-            className="group relative block overflow-hidden rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md active:translate-y-0"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                {card.title}
-              </span>
-              <div className={`rounded-lg p-2.5 ${card.bgIcon} transition-transform group-hover:scale-110`}>
-                {card.icon}
-              </div>
-            </div>
+        {cards.map((card) => {
+          const canNavigate =
+            "canNavigate" in card
+              ? card.canNavigate !== false
+              : true;
 
-            <div className="mt-3 flex items-baseline justify-between">
-              <span className="text-3xl font-bold tracking-tight text-slate-900">
-                {card.value}
-              </span>
-              <ChevronRight className="h-4 w-4 text-slate-300 transition-colors group-hover:text-slate-600" />
+          const cardClassName = canNavigate
+            ? "group relative block overflow-hidden rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md active:translate-y-0"
+            : "relative block overflow-hidden rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs";
+
+          const cardContent = (
+            <>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  {card.title}
+                </span>
+
+                <div
+                  className={`rounded-lg p-2.5 ${
+                    card.bgIcon
+                  } ${
+                    canNavigate
+                      ? "transition-transform group-hover:scale-110"
+                      : ""
+                  }`}
+                >
+                  {card.icon}
+                </div>
+              </div>
+
+              <div className="mt-3 flex items-baseline justify-between">
+                <span className="text-3xl font-bold tracking-tight text-slate-900">
+                  {card.value}
+                </span>
+
+                {canNavigate && (
+                  <ChevronRight className="h-4 w-4 text-slate-300 transition-colors group-hover:text-slate-600" />
+                )}
+              </div>
+            </>
+          );
+
+          return canNavigate ? (
+            <Link
+              key={card.title}
+              to={card.path}
+              className={cardClassName}
+            >
+              {cardContent}
+            </Link>
+          ) : (
+            <div
+              key={card.title}
+              className={cardClassName}
+              aria-label={`${card.title}: ${card.value}`}
+            >
+              {cardContent}
             </div>
-          </Link>
-        ))}
+          );
+        })}
       </section>
 
       {/* Seção Inferior: Listas Informativas e Painel de Alertas */}
@@ -188,17 +240,20 @@ export function Dashboard() {
         {/* Card Lista 1: Residentes */}
         <DashboardList title="Últimos Residentes Cadastrados">
           {dashboard.ultimosPacientes.length === 0 ? (
-            <p className="py-4 text-center text-xs text-slate-400">Nenhum residente recente.</p>
+            <p className="py-4 text-center text-xs text-slate-400">
+              Nenhum residente recente.
+            </p>
           ) : (
             dashboard.ultimosPacientes.map((patient) => (
               <DashboardItem key={patient.id}>
                 <Link
                   to={`/patients/${patient.id}`}
-                  className="flex items-center justify-between py-1 group/item"
+                  className="group/item flex items-center justify-between py-1"
                 >
                   <span className="font-medium text-slate-800 transition-colors group-hover/item:text-emerald-600">
                     {patient.nome}
                   </span>
+
                   <span className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
                     Ver detalhes
                   </span>
@@ -211,22 +266,26 @@ export function Dashboard() {
         {/* Card Lista 2: Evoluções */}
         <DashboardList title="Últimas Evoluções Clínicas">
           {dashboard.ultimasEvolucoes.length === 0 ? (
-            <p className="py-4 text-center text-xs text-slate-400">Nenhuma evolução registrada hoje.</p>
+            <p className="py-4 text-center text-xs text-slate-400">
+              Nenhuma evolução registrada hoje.
+            </p>
           ) : (
             dashboard.ultimasEvolucoes.map((evolution) => (
               <DashboardItem key={evolution.id}>
                 <Link
                   to={`/patients/${evolution.patient.id}/evolutions`}
-                  className="block space-y-1 py-1 group/item"
+                  className="group/item block space-y-1 py-1"
                 >
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-semibold text-slate-900 transition-colors group-hover/item:text-emerald-600">
                       {evolution.patient.nome}
                     </p>
+
                     <span className="text-[10px] text-slate-400">
                       {evolution.user?.nome}
                     </span>
                   </div>
+
                   <p className="line-clamp-2 text-xs leading-relaxed text-slate-500">
                     {evolution.descricao}
                   </p>
@@ -236,30 +295,44 @@ export function Dashboard() {
           )}
         </DashboardList>
 
-        {/* Card Lista 3: Pendências / Alertas do Dia (Substituiu a duplicação) */}
+        {/* Card Lista 3: Pendências / Alertas do Dia */}
         <DashboardList title="Pendências Operacionais de Hoje">
           {dashboard.pendencias.length === 0 ? (
             <div className="py-6 text-center">
-              <span className="inline-block rounded-full bg-emerald-50 p-2 text-emerald-600 mb-2">
+              <span className="mb-2 inline-block rounded-full bg-emerald-50 p-2 text-emerald-600">
                 <Users className="h-5 w-5" />
               </span>
-              <p className="text-xs font-medium text-slate-600">Tudo em dia por aqui!</p>
-              <p className="text-[11px] text-slate-400 mt-0.5">Nenhuma pendência crítica registrada para hoje.</p>
+
+              <p className="text-xs font-medium text-slate-600">
+                Tudo em dia por aqui!
+              </p>
+
+              <p className="mt-0.5 text-[11px] text-slate-400">
+                Nenhuma pendência crítica registrada para hoje.
+              </p>
             </div>
           ) : (
             dashboard.pendencias.map((pendencia, index) => (
               <DashboardItem key={index}>
                 <div className="flex items-center justify-between py-1">
                   <div className="flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
+                    <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" />
+
                     <span className="text-xs font-medium text-slate-700">
                       {pendencia.mensagem}
                     </span>
                   </div>
-                  <span className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${
-                    pendencia.tipo === "EVOLUTION" ? "bg-purple-50 text-purple-700" : "bg-rose-50 text-rose-700"
-                  }`}>
-                    {pendencia.tipo === "EVOLUTION" ? "Evolução" : "Sinais"}
+
+                  <span
+                    className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${
+                      pendencia.tipo === "EVOLUTION"
+                        ? "bg-purple-50 text-purple-700"
+                        : "bg-rose-50 text-rose-700"
+                    }`}
+                  >
+                    {pendencia.tipo === "EVOLUTION"
+                      ? "Evolução"
+                      : "Sinais"}
                   </span>
                 </div>
               </DashboardItem>
@@ -270,3 +343,4 @@ export function Dashboard() {
     </div>
   );
 }
+
