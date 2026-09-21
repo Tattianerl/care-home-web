@@ -294,6 +294,8 @@ export const rolePermissions: Record<Role, Permission[]> = {
   // =====================================================
   [Roles.ASSISTENTE_SOCIAL]: [
     Permissions.VIEW_PATIENTS,
+    Permissions.CREATE_PATIENT,
+    Permissions.EDIT_PATIENT,
 
     Permissions.VIEW_EVOLUTIONS,
     Permissions.CREATE_EVOLUTION,
@@ -301,7 +303,10 @@ export const rolePermissions: Record<Role, Permission[]> = {
 
     Permissions.VIEW_VITAL_SIGNS,
     Permissions.VIEW_MEDICATIONS,
+
     Permissions.VIEW_DOCUMENTS,
+    Permissions.UPLOAD_DOCUMENTS,
+
     Permissions.VIEW_APPOINTMENTS,
     Permissions.VIEW_NUTRITION_ASSESSMENT,
 
@@ -363,7 +368,7 @@ export const rolePermissions: Record<Role, Permission[]> = {
 
     // Documentos
     Permissions.VIEW_DOCUMENTS,
-    Permissions.UPLOAD_DOCUMENTS,
+   
   ],
 };
 
