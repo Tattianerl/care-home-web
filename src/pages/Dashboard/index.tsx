@@ -161,7 +161,7 @@ export function Dashboard() {
 
     if (canViewAppointments) {
       availableCards.push({
-        title: "Atendimentos Hoje",
+        title: "Agendamentos Hoje",
         value: dashboard.atendimentosHoje,
         icon: (
           <CalendarDays className="h-5 w-5 text-indigo-600" />
@@ -171,7 +171,7 @@ export function Dashboard() {
       });
 
       availableCards.push({
-        title: "Próximos Atendimentos",
+        title: "Próximos Agendamentos",
         value: dashboard.proximosAtendimentos,
         icon: (
           <Activity className="h-5 w-5 text-emerald-600" />

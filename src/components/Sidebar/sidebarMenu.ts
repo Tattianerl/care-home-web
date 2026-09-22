@@ -37,7 +37,7 @@ export const menuItems: MenuItem[] = [
     ],
   },
   {
-    title: "Residentes",
+    title: "Todos Residentes",
     path: "/patients",
     icon: Users,
     group: "Atendimento",
@@ -101,7 +101,7 @@ export const menuItems: MenuItem[] = [
     ],
   },
   {
-    title: "Agendamentos",
+    title: "Todos Agendamentos",
     path: "/appointments",
     icon: CalendarDays,
     group: "Atendimento",
@@ -120,7 +120,7 @@ export const menuItems: MenuItem[] = [
     ],
   },
   {
-    title: "Documentos",
+    title: "Todos Documentos",
     path: "/documents",
     icon: FolderKanban,
     group: "Atendimento",
