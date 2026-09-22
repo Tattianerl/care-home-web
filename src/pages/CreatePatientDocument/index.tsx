@@ -49,7 +49,7 @@ const DOCUMENT_TYPES: {
   },
   {
     value: "EVOLUCAO",
-    label: "EvoluÃ§Ã£o",
+    label: "Evolução",
   },
   {
     value: "OUTRO",
