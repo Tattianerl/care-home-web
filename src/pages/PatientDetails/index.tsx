@@ -48,6 +48,61 @@ import { useAuth } from "../../context/useAuth";
 import { can } from "../../permissions/can";
 import { Permissions } from "../../permissions/permissions";
 
+/**
+ * ============================================================
+ * REGRAS DE ACESSO À TIMELINE
+ * ============================================================
+ *
+ * Mantém o frontend alinhado com a regra atual do backend.
+ *
+ * A Timeline não é determinada por VIEW_APPOINTMENTS ou
+ * VIEW_EVOLUTIONS, pois o backend possui um grupo específico
+ * para esse recurso e inclui o Técnico de Enfermagem.
+ */
+const TIMELINE_VIEW_ROLES: ReadonlySet<string> = new Set([
+  "COORDENADOR",
+  "MEDICO",
+  "ENFERMEIRO",
+  "TECNICO_ENFERMAGEM",
+  "FISIOTERAPEUTA",
+  "NUTRICIONISTA",
+  "PSICOLOGO",
+  "ASSISTENTE_SOCIAL",
+  "TERAPEUTA_OCUPACIONAL",
+  "FONOAUDIOLOGO",
+]);
+
+const GENDER_LABELS: Record<Gender, string> = {
+  MASCULINO: "Masculino",
+  FEMININO: "Feminino",
+  OUTRO: "Outro",
+};
+
+const BLOOD_TYPE_LABELS: Record<BloodType, string> = {
+  A_POSITIVO: "A+",
+  A_NEGATIVO: "A-",
+  B_POSITIVO: "B+",
+  B_NEGATIVO: "B-",
+  AB_POSITIVO: "AB+",
+  AB_NEGATIVO: "AB-",
+  O_POSITIVO: "O+",
+  O_NEGATIVO: "O-",
+};
+
+const DEPENDENCY_LABELS: Record<DependencyLevel, string> = {
+  INDEPENDENTE: "Independente",
+  PARCIAL: "Dependência parcial",
+  TOTAL: "Dependência total",
+};
+
+const MARITAL_STATUS_LABELS: Record<MaritalStatus, string> = {
+  SOLTEIRO: "Solteiro(a)",
+  CASADO: "Casado(a)",
+  DIVORCIADO: "Divorciado(a)",
+  VIUVO: "Viúvo(a)",
+  UNIAO_ESTAVEL: "União estável",
+};
+
 interface PatientAppointment {
   id: string;
   titulo: string;
@@ -83,9 +138,111 @@ interface VitalSigns {
   };
 }
 
+function formatDate(dateString?: string | null): string {
+  if (!dateString) {
+    return "Não informado";
+  }
+
+  const date = new Date(dateString);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Data inválida";
+  }
+
+  return date.toLocaleDateString("pt-BR");
+}
+
+function formatDateTime(dateString?: string | null): string {
+  if (!dateString) {
+    return "Não informado";
+  }
+
+  const date = new Date(dateString);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Data inválida";
+  }
+
+  return date.toLocaleString("pt-BR");
+}
+
+function getGenderLabel(gender?: Gender | null): string {
+  if (!gender) {
+    return "Não informado";
+  }
+
+  return GENDER_LABELS[gender];
+}
+
+function getBloodTypeLabel(bloodType?: BloodType | null): string {
+  if (!bloodType) {
+    return "Não informado";
+  }
+
+  return BLOOD_TYPE_LABELS[bloodType];
+}
+
+function getDependencyLabel(
+  dependency?: DependencyLevel | null
+): string {
+  if (!dependency) {
+    return "Não informado";
+  }
+
+  return DEPENDENCY_LABELS[dependency];
+}
+
+function getMaritalStatusLabel(
+  status?: MaritalStatus | null
+): string {
+  if (!status) {
+    return "Não informado";
+  }
+
+  return MARITAL_STATUS_LABELS[status];
+}
+
+function getAppointmentStatusClass(
+  status: AppointmentStatus
+): string {
+  switch (status) {
+    case "REALIZADO":
+      return "border border-emerald-200 bg-emerald-50 text-emerald-700";
+
+    case "CANCELADO":
+      return "border border-rose-200 bg-rose-50 text-rose-700";
+
+    case "AGENDADO":
+    default:
+      return "border border-amber-200 bg-amber-50 text-amber-700";
+  }
+}
+
+function getAppointmentStatusLabel(
+  status: AppointmentStatus
+): string {
+  switch (status) {
+    case "REALIZADO":
+      return "Realizado";
+
+    case "CANCELADO":
+      return "Cancelado";
+
+    case "AGENDADO":
+    default:
+      return "Agendado";
+  }
+}
+
 export function PatientDetails() {
   const { id } = useParams();
   const { user } = useAuth();
+
+  /*
+   * ============================================================
+   * PERMISSÕES
+   * ============================================================
+   */
 
   const canEditPatient = user
     ? can(user.cargo, Permissions.EDIT_PATIENT)
@@ -133,8 +290,22 @@ export function PatientDetails() {
     canViewMedications ||
     canViewNutrition;
 
-  const canViewTimeline =
-    canViewClinicalInfo || canViewAppointments;
+  /**
+   * A Timeline possui regra própria.
+   *
+   * Não usamos canViewClinicalInfo || canViewAppointments aqui,
+   * porque RECEPCAO possui VIEW_APPOINTMENTS, mas não possui
+   * acesso ao endpoint da Timeline.
+   */
+  const canViewTimeline = user
+    ? TIMELINE_VIEW_ROLES.has(String(user.cargo))
+    : false;
+
+  /*
+   * ============================================================
+   * ESTADOS
+   * ============================================================
+   */
 
   const [patient, setPatient] =
     useState<PatientDetails | null>(null);
@@ -160,8 +331,16 @@ export function PatientDetails() {
   const [isNutritionModalOpen, setIsNutritionModalOpen] =
     useState(false);
 
+  /*
+   * ============================================================
+   * CARREGAMENTO DOS DADOS
+   * ============================================================
+   */
+
   const loadPatientData = useCallback(async () => {
-    if (!id) return;
+    if (!id) {
+      return;
+    }
 
     try {
       setLoading(true);
@@ -236,132 +415,11 @@ export function PatientDetails() {
     loadPatientData();
   }, [loadPatientData]);
 
-  function formatDate(
-    dateString?: string | null
-  ): string {
-    if (!dateString) {
-      return "Não informado";
-    }
-
-    const date = new Date(dateString);
-
-    if (Number.isNaN(date.getTime())) {
-      return "Data inválida";
-    }
-
-    return date.toLocaleDateString("pt-BR");
-  }
-
-  function formatDateTime(
-    dateString?: string | null
-  ): string {
-    if (!dateString) {
-      return "Não informado";
-    }
-
-    const date = new Date(dateString);
-
-    if (Number.isNaN(date.getTime())) {
-      return "Data inválida";
-    }
-
-    return date.toLocaleString("pt-BR");
-  }
-
-  function getGenderLabel(
-    gender?: Gender | null
-  ): string {
-    if (!gender) return "Não informado";
-
-    const labels: Record<Gender, string> = {
-      MASCULINO: "Masculino",
-      FEMININO: "Feminino",
-      OUTRO: "Outro",
-    };
-
-    return labels[gender];
-  }
-
-  function getBloodTypeLabel(
-    bloodType?: BloodType | null
-  ): string {
-    if (!bloodType) return "Não informado";
-
-    const labels: Record<BloodType, string> = {
-      A_POSITIVO: "A+",
-      A_NEGATIVO: "A-",
-      B_POSITIVO: "B+",
-      B_NEGATIVO: "B-",
-      AB_POSITIVO: "AB+",
-      AB_NEGATIVO: "AB-",
-      O_POSITIVO: "O+",
-      O_NEGATIVO: "O-",
-    };
-
-    return labels[bloodType];
-  }
-
-  function getDependencyLabel(
-    dependency?: DependencyLevel | null
-  ): string {
-    if (!dependency) return "Não informado";
-
-    const labels: Record<DependencyLevel, string> = {
-      INDEPENDENTE: "Independente",
-      PARCIAL: "Dependência parcial",
-      TOTAL: "Dependência total",
-    };
-
-    return labels[dependency];
-  }
-
-  function getMaritalStatusLabel(
-    status?: MaritalStatus | null
-  ): string {
-    if (!status) return "Não informado";
-
-    const labels: Record<MaritalStatus, string> = {
-      SOLTEIRO: "Solteiro(a)",
-      CASADO: "Casado(a)",
-      DIVORCIADO: "Divorciado(a)",
-      VIUVO: "Viúvo(a)",
-      UNIAO_ESTAVEL: "União estável",
-    };
-
-    return labels[status];
-  }
-
-  function getAppointmentStatusClass(
-    status: AppointmentStatus
-  ): string {
-    switch (status) {
-      case "REALIZADO":
-        return "border border-emerald-200 bg-emerald-50 text-emerald-700";
-
-      case "CANCELADO":
-        return "border border-rose-200 bg-rose-50 text-rose-700";
-
-      case "AGENDADO":
-      default:
-        return "border border-amber-200 bg-amber-50 text-amber-700";
-    }
-  }
-
-  function getAppointmentStatusLabel(
-    status: AppointmentStatus
-  ): string {
-    switch (status) {
-      case "REALIZADO":
-        return "Realizado";
-
-      case "CANCELADO":
-        return "Cancelado";
-
-      case "AGENDADO":
-      default:
-        return "Agendado";
-    }
-  }
+  /*
+   * ============================================================
+   * DADOS DERIVADOS
+   * ============================================================
+   */
 
   const latestVital =
     vitalSigns.length > 0
@@ -372,6 +430,12 @@ export function PatientDetails() {
     nutritionAssessments.length > 0
       ? nutritionAssessments[0]
       : null;
+
+  /*
+   * ============================================================
+   * ESTADO DE CARREGAMENTO
+   * ============================================================
+   */
 
   if (loading) {
     return (
@@ -407,7 +471,10 @@ export function PatientDetails() {
 
   return (
     <div className="space-y-8 pb-10">
-      {/* CABEÇALHO */}
+      {/* ========================================================
+          CABEÇALHO
+      ========================================================= */}
+
       <header className="space-y-3">
         <Link
           to="/patients"
@@ -452,8 +519,12 @@ export function PatientDetails() {
         </div>
       </header>
 
-      {/* DADOS PRINCIPAIS */}
+      {/* ========================================================
+          DADOS PRINCIPAIS
+      ========================================================= */}
+
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        {/* DADOS DO RESIDENTE */}
         <section className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
           <h2 className="flex items-center gap-2 border-b border-slate-100 pb-3 text-sm font-bold uppercase tracking-wider text-slate-800">
             <UserCheck className="h-4 w-4 text-emerald-600" />
@@ -556,6 +627,7 @@ export function PatientDetails() {
           </div>
         </section>
 
+        {/* RESPONSÁVEL / FAMILIAR */}
         <section className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
           <h2 className="flex items-center gap-2 border-b border-slate-100 pb-3 text-sm font-bold uppercase tracking-wider text-slate-800">
             <ShieldCheck className="h-4 w-4 text-emerald-600" />
@@ -632,7 +704,10 @@ export function PatientDetails() {
         </section>
       </div>
 
-      {/* SAÚDE */}
+      {/* ========================================================
+          SAÚDE
+      ========================================================= */}
+
       {canViewClinicalInfo && (
         <section className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
           <h2 className="flex items-center gap-2 border-b border-slate-100 pb-3 text-sm font-bold uppercase tracking-wider text-slate-800">
@@ -753,7 +828,10 @@ export function PatientDetails() {
         </section>
       )}
 
-      {/* INTERNAÇÃO */}
+      {/* ========================================================
+          INTERNAÇÃO
+      ========================================================= */}
+
       <section className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
         <h2 className="flex items-center gap-2 border-b border-slate-100 pb-3 text-sm font-bold uppercase tracking-wider text-slate-800">
           <Calendar className="h-4 w-4 text-emerald-600" />
@@ -805,7 +883,10 @@ export function PatientDetails() {
         </div>
       </section>
 
-      {/* AGENDA */}
+      {/* ========================================================
+          AGENDA
+      ========================================================= */}
+
       {canViewAppointments && (
         <section className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -862,7 +943,10 @@ export function PatientDetails() {
         </section>
       )}
 
-      {/* SINAIS VITAIS */}
+      {/* ========================================================
+          SINAIS VITAIS
+      ========================================================= */}
+
       {canViewVitalSigns && (
         <section className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
           <div className="flex flex-col gap-2 border-b border-slate-100 pb-3 sm:flex-row sm:items-center sm:justify-between">
@@ -958,7 +1042,10 @@ export function PatientDetails() {
         </section>
       )}
 
-      {/* MEDICAMENTOS */}
+      {/* ========================================================
+          MEDICAMENTOS
+      ========================================================= */}
+
       {canViewMedications && (
         <Link
           to={`/patients/${patient.id}/medications`}
@@ -969,7 +1056,10 @@ export function PatientDetails() {
         </Link>
       )}
 
-      {/* NUTRIÇÃO */}
+      {/* ========================================================
+          NUTRIÇÃO
+      ========================================================= */}
+
       {canViewNutrition && (
         <section className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
           <div className="flex flex-col gap-2 border-b border-slate-100 pb-3 sm:flex-row sm:items-center sm:justify-between">
@@ -1044,7 +1134,10 @@ export function PatientDetails() {
         </section>
       )}
 
-      {/* EVOLUÇÕES */}
+      {/* ========================================================
+          EVOLUÇÕES
+      ========================================================= */}
+
       {canViewEvolutions && (
         <section className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
           <div className="flex flex-col gap-2 border-b border-slate-100 pb-3 sm:flex-row sm:items-center sm:justify-between">
@@ -1056,9 +1149,10 @@ export function PatientDetails() {
             <div className="flex flex-wrap items-center gap-2">
               <Link
                 to={`/patients/${id}/evolutions`}
-                className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-xs transition-colors hover:bg-slate-50"
+                className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50"
               >
                 <span>Ver Todas</span>
+
                 <ChevronRight className="h-3.5 w-3.5" />
               </Link>
 
@@ -1110,7 +1204,10 @@ export function PatientDetails() {
         </section>
       )}
 
-      {/* DOCUMENTOS */}
+      {/* ========================================================
+          DOCUMENTOS
+      ========================================================= */}
+
       {canViewDocuments && (
         <section className="flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
@@ -1134,12 +1231,16 @@ export function PatientDetails() {
             className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition-colors hover:bg-slate-50"
           >
             <span>Acessar Pasta</span>
+
             <ChevronRight className="h-3.5 w-3.5" />
           </Link>
         </section>
       )}
 
-      {/* MODAL DE CADASTRO */}
+      {/* ========================================================
+          MODAL DE CADASTRO
+      ========================================================= */}
+
       <RegisterPatientModal
         isOpen={isRegisterPatientModalOpen}
         onClose={() =>
@@ -1148,7 +1249,10 @@ export function PatientDetails() {
         onSuccess={loadPatientData}
       />
 
-      {/* MODAL DE IMPRESSÃO */}
+      {/* ========================================================
+          MODAL DE IMPRESSÃO
+      ========================================================= */}
+
       <PatientPrintModal
         isOpen={isPatientPrintModalOpen}
         onClose={() =>
@@ -1157,7 +1261,10 @@ export function PatientDetails() {
         patient={patient}
       />
 
-      {/* MODAL NUTRIÇÃO */}
+      {/* ========================================================
+          MODAL DE NUTRIÇÃO
+      ========================================================= */}
+
       {id && (
         <NewNutritionalAssessmentModal
           isOpen={isNutritionModalOpen}
@@ -1244,3 +1351,4 @@ function NutritionCard({
     </div>
   );
 }
+
