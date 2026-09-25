@@ -23,7 +23,8 @@ export function EvolutionCard({
   const { user } = useAuth();
 
   const canEditEvolution = user
-    ? can(user.cargo, Permissions.EDIT_EVOLUTION)
+    ? can(user.cargo, Permissions.EDIT_EVOLUTION) &&
+      evolution.user?.id === user.id
     : false;
 
   const canDeleteEvolution = user
@@ -79,3 +80,4 @@ export function EvolutionCard({
     </div>
   );
 }
+

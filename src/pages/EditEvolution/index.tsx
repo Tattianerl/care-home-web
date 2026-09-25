@@ -23,21 +23,32 @@ export function EditEvolution() {
   const [descricao, setDescricao] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [evolutionOwner, setEvolutionOwner] = useState(false);
 
   useEffect(() => {
     async function loadEvolution() {
-      if (!id || !canEditEvolution) {
+      if (!id || !canEditEvolution || !user) {
         setLoading(false);
         return;
       }
 
       try {
         const data = await getEvolutions();
+
         const evolution = data.evolutions.find(
           (item) => item.id === id
         );
 
-        if (evolution) {
+        if (!evolution) {
+          setEvolutionOwner(false);
+          return;
+        }
+
+        const isOwner = evolution.user?.id === user.id;
+
+        setEvolutionOwner(isOwner);
+
+        if (isOwner) {
           setDescricao(evolution.descricao || "");
         }
       } catch (error) {
@@ -48,7 +59,7 @@ export function EditEvolution() {
     }
 
     void loadEvolution();
-  }, [id, canEditEvolution]);
+  }, [id, canEditEvolution, user]);
 
   if (!canEditEvolution) {
     return (
@@ -66,10 +77,26 @@ export function EditEvolution() {
     );
   }
 
+  if (!loading && !evolutionOwner) {
+    return (
+      <div className="p-6 max-w-3xl mx-auto">
+        <div className="bg-white rounded-xl border border-gray-100 p-8 text-center">
+          <h1 className="text-xl font-semibold text-gray-800 mb-2">
+            Acesso não permitido
+          </h1>
+
+          <p className="text-gray-500">
+            Você só pode editar suas próprias evoluções.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
 
-    if (!id || !descricao.trim()) return;
+    if (!id || !descricao.trim() || !evolutionOwner) return;
 
     try {
       setSaving(true);
@@ -114,7 +141,7 @@ export function EditEvolution() {
           </h1>
 
           <p className="text-sm text-gray-500">
-            Atualize as informações da evolução do residente.
+            Atualize as informações da sua evolução do residente.
           </p>
         </div>
       </div>
@@ -156,3 +183,4 @@ export function EditEvolution() {
     </div>
   );
 }
+
