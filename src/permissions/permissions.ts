@@ -202,9 +202,8 @@ export const rolePermissions: Record<Role, Permission[]> = {
     Permissions.VIEW_APPOINTMENTS,
 
     // Nutrição
+    // Médico pode consultar, mas não criar, editar ou excluir.
     Permissions.VIEW_NUTRITION_ASSESSMENT,
-    Permissions.CREATE_NUTRITION_ASSESSMENT,
-    Permissions.EDIT_NUTRITION_ASSESSMENT,
 
     // Relatórios
     Permissions.VIEW_REPORTS,
@@ -244,9 +243,11 @@ export const rolePermissions: Record<Role, Permission[]> = {
     Permissions.VIEW_DOCUMENTS,
     Permissions.VIEW_APPOINTMENTS,
 
+    // Nutrição — competência exclusiva do nutricionista
     Permissions.VIEW_NUTRITION_ASSESSMENT,
     Permissions.CREATE_NUTRITION_ASSESSMENT,
     Permissions.EDIT_NUTRITION_ASSESSMENT,
+    Permissions.DELETE_NUTRITION_ASSESSMENT,
 
     Permissions.VIEW_REPORTS,
   ],
@@ -357,4 +358,3 @@ export const rolePermissions: Record<Role, Permission[]> = {
     Permissions.UPLOAD_DOCUMENTS,
   ],
 };
-
