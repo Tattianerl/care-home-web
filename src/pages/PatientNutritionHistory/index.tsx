@@ -12,6 +12,7 @@ import {
   Loader2,
   User,
   FileText,
+  Pencil,
 } from "lucide-react";
 
 import { nutritionService } from "../../services/nutritionService";
@@ -22,17 +23,28 @@ import type { PatientDetails } from "../../types/patientDetails";
 import { NewNutritionalAssessmentModal } from "../../components/nutrition/NewNutritionalAssessmentModal";
 import { getImcClassification } from "../../utils/nutrition";
 
-// 👇 Importando autenticação e roles
 import { useAuth } from "../../context/useAuth";
-import { Roles } from "../../permissions/roles";
+import { can } from "../../permissions/can";
+import { Permissions } from "../../permissions/permissions";
 
 export function PatientNutritionHistory() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
 
-  // 👇 Apenas equipe clínica, coordenação e serviço social podem gerenciar avaliações nutricionais
-  const canManageNutrition = user
-    ? ([Roles.COORDENADOR, Roles.MEDICO, Roles.ENFERMEIRO, Roles.ASSISTENTE_SOCIAL] as string[]).includes(user.cargo)
+  const canViewNutrition = user
+    ? can(user.cargo, Permissions.VIEW_NUTRITION_ASSESSMENT)
+    : false;
+
+  const canCreateNutrition = user
+    ? can(user.cargo, Permissions.CREATE_NUTRITION_ASSESSMENT)
+    : false;
+
+  const canEditNutrition = user
+    ? can(user.cargo, Permissions.EDIT_NUTRITION_ASSESSMENT)
+    : false;
+
+  const canDeleteNutrition = user
+    ? can(user.cargo, Permissions.DELETE_NUTRITION_ASSESSMENT)
     : false;
 
   const [patient, setPatient] = useState<PatientDetails | null>(null);
@@ -40,13 +52,20 @@ export function PatientNutritionHistory() {
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  // Modais
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
 
+  const [editingAssessment, setEditingAssessment] =
+    useState<NutritionalAssessment | null>(null);
+
   const loadData = useCallback(async () => {
-    if (!id) return;
+    if (!id || !canViewNutrition) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
+
       const [patientData, nutritionData] = await Promise.all([
         getPatient(id),
         nutritionService.listByPatient(id).catch(() => []),
@@ -59,23 +78,31 @@ export function PatientNutritionHistory() {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, canViewNutrition]);
 
   useEffect(() => {
-    loadData();
+    void loadData();
   }, [loadData]);
 
   async function handleDelete(assessmentId: string) {
-    if (!canManageNutrition) return;
+    if (!canDeleteNutrition) return;
 
-    if (!confirm("Tem certeza que deseja excluir esta avaliação nutricional?")) {
+    if (
+      !confirm(
+        "Tem certeza que deseja excluir esta avaliação nutricional?"
+      )
+    ) {
       return;
     }
 
     try {
       setDeletingId(assessmentId);
+
       await nutritionService.delete(assessmentId);
-      setAssessments((prev) => prev.filter((item) => item.id !== assessmentId));
+
+      setAssessments((prev) =>
+        prev.filter((item) => item.id !== assessmentId)
+      );
     } catch (error) {
       console.error("Erro ao excluir avaliação:", error);
       alert("Não foi possível excluir o registro.");
@@ -84,9 +111,45 @@ export function PatientNutritionHistory() {
     }
   }
 
+  function handleEdit(assessment: NutritionalAssessment) {
+    if (!canEditNutrition) return;
+
+    setEditingAssessment(assessment);
+  }
+
   function formatDate(dateString: string) {
     const date = new Date(dateString);
-    return isNaN(date.getTime()) ? "Data inválida" : date.toLocaleString("pt-BR");
+
+    return isNaN(date.getTime())
+      ? "Data inválida"
+      : date.toLocaleString("pt-BR");
+  }
+
+  if (!canViewNutrition) {
+    return (
+      <div className="p-6">
+        <div className="mx-auto max-w-3xl rounded-xl border border-slate-200 bg-white p-8 text-center">
+          <Apple className="mx-auto h-10 w-10 text-slate-300" />
+
+          <h1 className="mt-4 text-xl font-semibold text-slate-800">
+            Acesso restrito
+          </h1>
+
+          <p className="mt-2 text-sm text-slate-500">
+            Seu perfil não possui permissão para visualizar avaliações
+            nutricionais.
+          </p>
+
+          <Link
+            to={`/patients/${id}`}
+            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar ao prontuário
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   if (loading) {
@@ -116,17 +179,22 @@ export function PatientNutritionHistory() {
           <div>
             <div className="flex items-center gap-2">
               <Apple className="h-6 w-6 text-emerald-600" />
+
               <h1 className="text-2xl font-bold tracking-tight text-slate-900">
                 Histórico Nutricional
               </h1>
             </div>
+
             <p className="mt-1 text-xs font-medium text-slate-500">
-              Residente: <span className="font-semibold text-slate-700">{patient?.nome}</span>
+              Residente:{" "}
+              <span className="font-semibold text-slate-700">
+                {patient?.nome}
+              </span>
             </p>
           </div>
 
-          {/* 👇 Botão de nova avaliação exibido apenas para cargos autorizados */}
-          {canManageNutrition && (
+          {/* Nova avaliação */}
+          {canCreateNutrition && (
             <button
               type="button"
               onClick={() => setIsNewModalOpen(true)}
@@ -139,15 +207,17 @@ export function PatientNutritionHistory() {
         </div>
       </header>
 
-      {/* Lista de Avaliações */}
+      {/* Lista de avaliações */}
       {assessments.length === 0 ? (
         <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center">
           <Apple className="mx-auto h-12 w-12 text-slate-300" />
+
           <h3 className="mt-4 text-sm font-bold text-slate-700">
             Nenhuma avaliação registrada
           </h3>
+
           <p className="mt-1 text-xs text-slate-500">
-            {canManageNutrition
+            {canCreateNutrition
               ? "Clique no botão acima para realizar o primeiro registro de peso e altura."
               : "Nenhum registro de avaliação nutricional cadastrado para este residente."}
           </p>
@@ -162,6 +232,7 @@ export function PatientNutritionHistory() {
               <div className="flex flex-col gap-4 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
                   <Calendar className="h-4 w-4 text-emerald-600" />
+
                   <span>{formatDate(item.createdAt)}</span>
                 </div>
 
@@ -169,12 +240,25 @@ export function PatientNutritionHistory() {
                   {item.user && (
                     <span className="flex items-center gap-1.5 text-xs text-slate-500">
                       <User className="h-3.5 w-3.5 text-slate-400" />
+
                       {item.user.nome} ({item.user.cargo})
                     </span>
                   )}
 
-                  {/* 👇 Botão de exclusão exibido apenas para cargos autorizados */}
-                  {canManageNutrition && (
+                  {/* Editar avaliação */}
+                  {canEditNutrition && (
+                    <button
+                      type="button"
+                      onClick={() => handleEdit(item)}
+                      className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-emerald-50 hover:text-emerald-600"
+                      title="Editar avaliação"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                  )}
+
+                  {/* Excluir avaliação */}
+                  {canDeleteNutrition && (
                     <button
                       type="button"
                       onClick={() => handleDelete(item.id)}
@@ -198,10 +282,12 @@ export function PatientNutritionHistory() {
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
                     <Scale className="h-4 w-4" />
                   </div>
+
                   <div>
                     <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
                       Peso
                     </span>
+
                     <span className="text-sm font-bold text-slate-800">
                       {item.peso} kg
                     </span>
@@ -212,10 +298,12 @@ export function PatientNutritionHistory() {
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
                     <Ruler className="h-4 w-4" />
                   </div>
+
                   <div>
                     <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
                       Altura
                     </span>
+
                     <span className="text-sm font-bold text-slate-800">
                       {item.altura} m
                     </span>
@@ -226,14 +314,19 @@ export function PatientNutritionHistory() {
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
                     <Activity className="h-4 w-4" />
                   </div>
+
                   <div>
                     <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
                       IMC
                     </span>
+
                     <div className="flex items-center gap-1.5">
                       <span className="text-sm font-bold text-slate-800">
-                        {item.imc !== null ? Number(item.imc).toFixed(1) : "--"}
+                        {item.imc !== null && item.imc !== undefined
+                          ? Number(item.imc).toFixed(1)
+                          : "--"}
                       </span>
+
                       <span className="text-xs font-medium text-slate-600">
                         ({getImcClassification(item.imc)})
                       </span>
@@ -246,8 +339,12 @@ export function PatientNutritionHistory() {
               {item.observacoes && (
                 <div className="mt-4 flex items-start gap-2 rounded-xl bg-slate-50 p-3 text-xs text-slate-600">
                   <FileText className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+
                   <div>
-                    <span className="font-semibold text-slate-700">Observações: </span>
+                    <span className="font-semibold text-slate-700">
+                      Observações:{" "}
+                    </span>
+
                     {item.observacoes}
                   </div>
                 </div>
@@ -258,12 +355,24 @@ export function PatientNutritionHistory() {
       )}
 
       {/* Modal de Nova Avaliação */}
-      {id && patient && canManageNutrition && (
+      {id && patient && canCreateNutrition && (
         <NewNutritionalAssessmentModal
           isOpen={isNewModalOpen}
           onClose={() => setIsNewModalOpen(false)}
           patientId={id}
           patientName={patient.nome}
+          onSuccess={loadData}
+        />
+      )}
+
+      {/* Modal de Edição */}
+      {id && patient && canEditNutrition && (
+        <NewNutritionalAssessmentModal
+          isOpen={editingAssessment !== null}
+          onClose={() => setEditingAssessment(null)}
+          patientId={id}
+          patientName={patient.nome}
+          assessment={editingAssessment}
           onSuccess={loadData}
         />
       )}
